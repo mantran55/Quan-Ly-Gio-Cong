@@ -1,5 +1,5 @@
 /* ===== CONFIG ===== */
-const API_URL = "https://repo-proxy.onrender.com/api"; // thay domain proxy của bạn
+const API_URL = "https://proxy.mantrandinhminh.workers.dev/api"; // thay domain proxy của bạn
 
 /* ===== Helpers ===== */
 const $ = s => document.querySelector(s);
@@ -179,3 +179,4 @@ async function loadRequestList(){
 function escapeHtml(s){
   return String(s||'').replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
 }
+
