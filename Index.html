@@ -1,0 +1,828 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Portal nội bộ</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<style>
+  :root{
+    --bg:#0b1220; --card:#0f172a; --muted:#93a4b8; --text:#e5eef7;
+    --pri:#3b82f6; --pri-2:#1d4ed8; --ok:#10b981; --err:#ef4444; --bd:#1f2a44;
+    --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  *{ box-sizing:border-box }
+  body{ 
+    margin:0; 
+    font-family: Inter, ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; 
+    background:linear-gradient(180deg,#0b1220,#0a1020); 
+    color:var(--text);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+  }
+  .container{ 
+    max-width:1000px; 
+    margin:4vh auto; 
+    padding:0 16px;
+    width: 100%;
+    flex: 1;
+  }
+  .card{ 
+    background:linear-gradient(180deg,#0f172a 0%, #0c1426 100%);
+    border:1px solid var(--bd); 
+    border-radius:18px; 
+    box-shadow:0 10px 40px rgba(0,0,0,.35); 
+    padding:22px;
+    transition: var(--transition);
+    position: relative;
+    overflow: hidden;
+  }
+  .card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, var(--pri), var(--ok));
+    opacity: 0;
+    transition: opacity 0.3s;
+  }
+  .card:hover::before {
+    opacity: 1;
+  }
+  h1{ 
+    margin:0 0 12px; 
+    font-size:22px; 
+    letter-spacing:.2px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  h2{ 
+    margin:12px 0 10px; 
+    font-size:18px; 
+    color:#eaf3ff;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  p.muted{ 
+    color:var(--muted); 
+    margin:6px 0 0; 
+    font-size:13px;
+    line-height: 1.5;
+  }
+  /* form */
+  label{ 
+    display:block; 
+    font-size:13px; 
+    color:#c6d3e5; 
+    margin:12px 0 6px;
+    font-weight: 500;
+  }
+  input, select, textarea{
+    width:100%; 
+    background:#0b1324; 
+    color:#e8f0ff;
+    border:1px solid #1f2a44; 
+    border-radius:12px; 
+    outline:none;
+    padding:12px 12px; 
+    font-size:14px; 
+    transition: var(--transition);
+  }
+  input:focus, select:focus, textarea:focus{ 
+    border-color:#385bff; 
+    box-shadow:0 0 0 3px rgba(56,91,255,.2);
+    transform: translateY(-2px);
+  }
+  textarea{ 
+    min-height:110px; 
+    resize:vertical 
+  }
+  .row{ 
+    display:grid; 
+    grid-template-columns:1fr 1fr; 
+    gap:14px 
+  }
+  .row-3{ 
+    display:grid; 
+    grid-template-columns:1fr 1fr 1fr; 
+    gap:14px 
+  }
+  .actions{ 
+    margin-top:14px; 
+    display:flex; 
+    gap:10px; 
+    flex-wrap:wrap 
+  }
+  button{
+    appearance:none; 
+    border:0; 
+    border-radius:12px; 
+    padding:12px 16px; 
+    font-weight:600;
+    background:linear-gradient(180deg,var(--pri),var(--pri-2)); 
+    color:#fff; 
+    cursor:pointer;
+    box-shadow:0 8px 22px rgba(59,130,246,.25); 
+    transition: var(--transition);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    position: relative;
+    overflow: hidden;
+  }
+  button::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: rgba(255,255,255,0.2);
+    transition: left 0.5s;
+  }
+  button:hover::before {
+    left: 100%;
+  }
+  button:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 12px 28px rgba(59,130,246,.35);
+  }
+  button:active{ 
+    transform:translateY(1px) 
+  }
+  button.secondary{ 
+    background:#141c2f; 
+    border:1px solid var(--bd); 
+    color:#dbe7ff; 
+    box-shadow:none 
+  }
+  button.secondary:hover {
+    background: #1a2438;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+  }
+  button[disabled]{ 
+    opacity:.6; 
+    cursor:not-allowed;
+    transform: none !important;
+  }
+  /* tabs */
+  .tabs{ 
+    display:flex; 
+    gap:10px; 
+    flex-wrap:wrap; 
+    margin:8px 0 14px;
+    position: relative;
+  }
+  .tabs::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: var(--bd);
+  }
+  .tabs button{ 
+    background:#121a2f; 
+    border:1px solid var(--bd); 
+    color:#cfe1ff;
+    padding: 10px 16px;
+    border-radius: 8px 8px 0 0;
+    border-bottom: none;
+    position: relative;
+    transition: var(--transition);
+  }
+  .tabs button::after {
+    content: '';
+    position: absolute;
+    bottom: -1px;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: var(--pri);
+    transform: scaleX(0);
+    transition: transform 0.3s;
+  }
+  .tabs button:hover {
+    background: #1a2438;
+    color: #fff;
+  }
+  .tabs button.active{ 
+    background:linear-gradient(180deg,var(--pri),var(--pri-2)); 
+    color:#fff;
+    border-color: var(--pri);
+  }
+  .tabs button.active::after {
+    transform: scaleX(1);
+  }
+  /* table */
+  .table-wrap{ 
+    overflow:auto; 
+    border:1px solid var(--bd); 
+    border-radius:14px;
+    max-height: 60vh;
+  }
+  table{ 
+    width:100%; 
+    border-collapse:collapse; 
+    table-layout:fixed; 
+    background:#0b1324;
+    min-width: 600px;
+  }
+  thead th{ 
+    position:sticky; 
+    top:0; 
+    background:#0e1a33; 
+    color:#e9f2ff;
+    z-index: 10;
+    font-weight: 600;
+  }
+  th,td{ 
+    padding:10px 12px; 
+    border-bottom:1px solid #1a2644; 
+    white-space:nowrap; 
+    overflow:hidden; 
+    text-overflow:ellipsis; 
+    font-size:14px;
+    transition: var(--transition);
+  }
+  tr:hover td {
+    background: rgba(59, 130, 246, 0.1);
+  }
+  th{text-align:center} 
+  td{text-align:left} 
+  td.num{text-align:right}
+  .hidden{ display:none !important }
+  .chip{ 
+    padding:3px 8px; 
+    border-radius:999px; 
+    background:#122041; 
+    color:#b9cbff; 
+    font-size:12px;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+  }
+  .ok{ color:var(--ok) } 
+  .err{ color:var(--err) }
+  .who{ 
+    margin-left:auto; 
+    color:#b7c7e0; 
+    font-size:13px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .brand{ 
+    display:flex; 
+    align-items:center; 
+    gap:10px; 
+    margin-bottom:10px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid var(--bd);
+  }
+  .logo{ 
+    width:32px; 
+    height:32px; 
+    border-radius:10px; 
+    background:linear-gradient(135deg,#5b8dff,#6cf9e6); 
+    box-shadow:0 8px 18px rgba(108,249,230,.25);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #0b1220;
+    font-weight: bold;
+  }
+  
+  /* Toast Notification */
+  .toast-container {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 1000;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .toast {
+    background: #0f172a;
+    border-left: 4px solid;
+    border-radius: 8px;
+    padding: 16px;
+    min-width: 250px;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    animation: slideIn 0.3s forwards, slideOut 0.3s 2.7s forwards;
+    opacity: 0;
+    transform: translateX(100%);
+  }
+  .toast.success {
+    border-color: var(--ok);
+  }
+  .toast.error {
+    border-color: var(--err);
+  }
+  .toast.info {
+    border-color: var(--pri);
+  }
+  .toast-icon {
+    font-size: 20px;
+  }
+  .toast.success .toast-icon {
+    color: var(--ok);
+  }
+  .toast.error .toast-icon {
+    color: var(--err);
+  }
+  .toast.info .toast-icon {
+    color: var(--pri);
+  }
+  .toast-message {
+    flex: 1;
+  }
+  .toast-close {
+    background: none;
+    border: none;
+    color: var(--muted);
+    cursor: pointer;
+    font-size: 16px;
+    padding: 0;
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 4px;
+    transition: var(--transition);
+  }
+  .toast-close:hover {
+    background: rgba(255,255,255,0.1);
+    color: var(--text);
+  }
+  
+  /* Loading Spinner */
+  .spinner {
+    display: inline-block;
+    width: 16px;
+    height: 16px;
+    border: 2px solid rgba(255,255,255,0.3);
+    border-radius: 50%;
+    border-top-color: white;
+    animation: spin 0.8s linear infinite;
+  }
+  
+  /* Animations */
+  @keyframes slideIn {
+    to {
+      opacity: 1;
+      transform: translateX(0);
+    }
+  }
+  @keyframes slideOut {
+    to {
+      opacity: 0;
+      transform: translateX(100%);
+    }
+  }
+  @keyframes spin {
+    to {
+      transform: rotate(360deg);
+    }
+  }
+  
+  /* Responsive */
+  @media (max-width: 768px) {
+    .container {
+      margin: 2vh auto;
+      padding: 0 12px;
+    }
+    .card {
+      padding: 16px;
+    }
+    .row {
+      grid-template-columns: 1fr;
+    }
+    .row-3 {
+      grid-template-columns: 1fr;
+    }
+    .tabs {
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+      padding-bottom: 1px;
+    }
+    .tabs button {
+      white-space: nowrap;
+    }
+    .table-wrap {
+      border-radius: 8px;
+    }
+    th, td {
+      padding: 8px 10px;
+      font-size: 13px;
+    }
+    h1 {
+      font-size: 20px;
+    }
+    h2 {
+      font-size: 16px;
+    }
+    .toast-container {
+      top: 10px;
+      right: 10px;
+      left: 10px;
+    }
+    .toast {
+      min-width: auto;
+    }
+  }
+  
+  /* Footer */
+  .footer {
+    text-align: center;
+    padding: 20px;
+    color: var(--muted);
+    font-size: 13px;
+    border-top: 1px solid var(--bd);
+    margin-top: 20px;
+  }
+</style>
+</head>
+<body>
+  <div class="container">
+    <!-- LOGIN -->
+    <div class="card" id="cardLogin">
+      <div class="brand">
+        <div class="logo"><i class="fas fa-building"></i></div>
+        <h1><i class="fas fa-sign-in-alt"></i> Portal nội bộ</h1>
+      </div>
+      <div class="row">
+        <div>
+          <label><i class="fas fa-envelope"></i> Email</label>
+          <input id="email" type="email" placeholder="you@example.com" />
+        </div>
+        <div>
+          <label><i class="fas fa-lock"></i> Mật khẩu</label>
+          <input id="password" type="password" placeholder="••••••••" />
+        </div>
+      </div>
+      <div class="actions">
+        <button id="btnLogin">
+          <i class="fas fa-sign-in-alt"></i> Đăng nhập
+        </button>
+        <span id="loginMsg" class="err"></span>
+      </div>
+      <p class="muted">Tài khoản lấy từ sheet <b>Users</b> (A: Email, B: Password, C: Tên nhân viên).</p>
+    </div>
+    <!-- APP -->
+    <div class="card hidden" id="cardApp">
+      <div class="brand">
+        <div class="logo"><i class="fas fa-users-cog"></i></div>
+        <h1><i class="fas fa-user-tie"></i> Trung tâm nhân sự</h1>
+        <div class="who" id="whoami"></div>
+      </div>
+      <div class="tabs">
+        <button class="active" data-tab="requestTab">
+          <i class="fas fa-clipboard-list"></i> Phiếu yêu cầu
+        </button>
+        <button data-tab="hoursTab">
+          <i class="fas fa-clock"></i> Giờ Công của tôi
+        </button>
+      </div>
+      <!-- Phiếu yêu cầu -->
+      <section id="requestTab">
+        <h2><i class="fas fa-plus-circle"></i> Phiếu yêu cầu <span class="chip"><i class="fas fa-star"></i> mới</span></h2>
+        <div class="row">
+          <div>
+            <label><i class="fas fa-exclamation-circle"></i> Vấn đề</label>
+            <select id="issueType">
+              <option value="">-- Chọn vấn đề --</option>
+              <option value="Khiếu nại giờ công">Khiếu nại giờ công</option>
+              <option value="pass ca">pass ca</option>
+            </select>
+          </div>
+          <div>
+            <label><i class="fas fa-calendar-alt"></i> Ngày khiếu nại / pass ca</label>
+            <input id="requestDate" type="text" placeholder="VD: 12/01/2026 hoặc 'Ngày'" />
+          </div>
+        </div>
+        <div id="passCaRow" class="hidden">
+          <label><i class="fas fa-user-check"></i> Chọn nhân viên (chỉ khi chọn “pass ca”)</label>
+          <select id="passEmployee"></select>
+        </div>
+        <label><i class="fas fa-comment-alt"></i> Nội dung trình bày</label>
+        <textarea id="content" placeholder="Mô tả chi tiết..."></textarea>
+        <div class="actions">
+          <button id="btnSend">
+            <i class="fas fa-paper-plane"></i> Gửi
+          </button>
+          <span id="requestMsg"></span>
+        </div>
+      </section>
+      <!-- Giờ Công -->
+      <section id="hoursTab" class="hidden">
+        <h2 id="hoursTitle"><i class="fas fa-business-time"></i> Giờ Công</h2>
+        <div id="hoursBox" class="muted">
+          <div class="spinner"></div> Đang tải...
+        </div>
+        <div class="table-wrap">
+          <table id="hoursTable" class="hidden">
+            <thead id="hoursHead"></thead>
+            <tbody><tr id="hoursRow"></tr></tbody>
+          </table>
+        </div>
+      </section>
+    </div>
+  </div>
+  
+  <div class="footer">
+    <p>© 2023 Portal Nội Bộ - Hệ thống quản lý nhân sự</p>
+  </div>
+  
+  <!-- Toast Container -->
+  <div class="toast-container" id="toastContainer"></div>
+
+<script>
+/* ===== CONFIG ===== */
+const API_URL = "https://script.google.com/macros/s/PASTE_YOUR_DEPLOY_ID/exec"; // <-- Đổi thành Web App URL của bạn
+/* ===== Utils ===== */
+const $ = s => document.querySelector(s);
+const state = { token:null, email:null, empName:null, employees:[] };
+
+// Toast notification function
+function showToast(message, type = 'info') {
+  const toastContainer = $('#toastContainer');
+  const toast = document.createElement('div');
+  toast.className = `toast ${type}`;
+  
+  let icon = '';
+  if (type === 'success') icon = '<i class="fas fa-check-circle toast-icon"></i>';
+  else if (type === 'error') icon = '<i class="fas fa-exclamation-circle toast-icon"></i>';
+  else icon = '<i class="fas fa-info-circle toast-icon"></i>';
+  
+  toast.innerHTML = `
+    ${icon}
+    <div class="toast-message">${message}</div>
+    <button class="toast-close"><i class="fas fa-times"></i></button>
+  `;
+  
+  toastContainer.appendChild(toast);
+  
+  // Close button
+  toast.querySelector('.toast-close').addEventListener('click', () => {
+    toast.style.animation = 'slideOut 0.3s forwards';
+    setTimeout(() => toast.remove(), 300);
+  });
+  
+  // Auto remove after 3s
+  setTimeout(() => {
+    if (toast.parentNode) {
+      toast.style.animation = 'slideOut 0.3s forwards';
+      setTimeout(() => toast.remove(), 300);
+    }
+  }, 3000);
+}
+
+async function api(path, data={}){
+  try {
+    const res = await fetch(`${API_URL}?path=${encodeURIComponent(path)}`, {
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify(data)
+    });
+    
+    if (!res.ok) {
+      throw new Error(`Lỗi mạng: ${res.status} ${res.statusText}`);
+    }
+    
+    const result = await res.json();
+    return result;
+  } catch (error) {
+    console.error('API Error:', error);
+    showToast(`Lỗi kết nối: ${error.message}`, 'error');
+    throw error;
+  }
+}
+/* ===== Tabs ===== */
+document.addEventListener('click', (e)=>{
+  const btn = e.target.closest('.tabs button'); if(!btn) return;
+  document.querySelectorAll('.tabs button').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  const tab = btn.dataset.tab;
+  ['requestTab','hoursTab'].forEach(id => $('#'+id).classList.add('hidden'));
+  $('#'+tab).classList.remove('hidden');
+  if (tab==='hoursTab') loadHours();
+});
+/* ===== Login ===== */
+$('#btnLogin').addEventListener('click', async ()=>{
+  $('#btnLogin').disabled = true; 
+  $('#btnLogin').innerHTML = '<div class="spinner"></div> Đang đăng nhập...';
+  $('#loginMsg').textContent = "";
+  
+  const email = $('#email').value.trim(); 
+  const password = $('#password').value.trim();
+  
+  if (!email || !password) {
+    showToast('Vui lòng nhập email và mật khẩu', 'error');
+    $('#btnLogin').disabled = false;
+    $('#btnLogin').innerHTML = '<i class="fas fa-sign-in-alt"></i> Đăng nhập';
+    return;
+  }
+  
+  try{
+    const r = await api('login', { email, password });
+    if (!r.ok){ 
+      showToast(r.message || 'Đăng nhập thất bại.', 'error');
+      $('#loginMsg').textContent = r.message || 'Đăng nhập thất bại.';
+      return; 
+    }
+    
+    state.token = r.token; 
+    state.email = r.email; 
+    state.empName = r.empName;
+    $('#whoami').innerHTML = `<i class="fas fa-user-circle"></i> Đang đăng nhập: ${state.empName} (${state.email})`;
+    
+    // load dropdown nhân viên cho 'pass ca'
+    const list = await api('employees', {});
+    state.employees = Array.isArray(list) ? list : [];
+    renderEmployeeDropdown();
+    
+    // Switch UI
+    $('#cardLogin').classList.add('hidden');
+    $('#cardApp').classList.remove('hidden');
+    
+    showToast(`Chào mừng, ${state.empName}!`, 'success');
+  }catch(err){
+    showToast(`Lỗi: ${err.message}`, 'error');
+  }finally{
+    $('#btnLogin').disabled = false;
+    $('#btnLogin').innerHTML = '<i class="fas fa-sign-in-alt"></i> Đăng nhập';
+  }
+});
+function renderEmployeeDropdown(){
+  const sel = $('#passEmployee'); sel.innerHTML = "";
+  const opt0 = document.createElement('option'); opt0.value=""; opt0.textContent="-- Chọn nhân viên --";
+  sel.appendChild(opt0);
+  state.employees.forEach(n=>{ const o=document.createElement('option'); o.value=n; o.textContent=n; sel.appendChild(o); });
+}
+$('#issueType').addEventListener('change', ()=>{
+  const isPass = $('#issueType').value === 'pass ca';
+  $('#passCaRow').classList.toggle('hidden', !isPass);
+});
+/* ===== Gửi phiếu ===== */
+$('#btnSend').addEventListener('click', async ()=>{
+  const issueType = $('#issueType').value;
+  const requestDate = $('#requestDate').value.trim();
+  const content = $('#content').value.trim();
+  
+  if (!issueType) {
+    showToast('Vui lòng chọn loại vấn đề', 'error');
+    return;
+  }
+  
+  if (!requestDate) {
+    showToast('Vui lòng nhập ngày khiếu nại/pass ca', 'error');
+    return;
+  }
+  
+  if (issueType === 'pass ca' && !$('#passEmployee').value) {
+    showToast('Vui lòng chọn nhân viên để pass ca', 'error');
+    return;
+  }
+  
+  if (!content) {
+    showToast('Vui lòng nhập nội dung trình bày', 'error');
+    return;
+  }
+  
+  const payload = {
+    issueType,
+    requestDate,
+    passEmployee: issueType==='pass ca' ? $('#passEmployee').value : '',
+    content
+  };
+  
+  $('#btnSend').disabled = true; 
+  $('#btnSend').innerHTML = '<div class="spinner"></div> Đang gửi...';
+  $('#requestMsg').className=""; 
+  $('#requestMsg').textContent="";
+  
+  try{
+    const r = await api('submit', { token: state.token, payload });
+    if (!r.ok){ 
+      showToast(r.message||'Gửi thất bại.', 'error');
+      $('#requestMsg').className='err'; 
+      $('#requestMsg').textContent=r.message||'Gửi thất bại.'; 
+      return; 
+    }
+    
+    // reset
+    $('#issueType').value=""; 
+    $('#requestDate').value=""; 
+    $('#passEmployee').value=""; 
+    $('#content').value="";
+    $('#passCaRow').classList.add('hidden');
+    
+    showToast('Đã gửi phiếu yêu cầu thành công!', 'success');
+    $('#requestMsg').className='ok'; 
+    $('#requestMsg').textContent='Đã gửi phiếu yêu cầu.';
+    setTimeout(()=>{ 
+      $('#requestMsg').textContent=""; 
+      $('#requestMsg').className=""; 
+    }, 2000);
+  }catch(err){
+    showToast(`Lỗi: ${err.message}`, 'error');
+    $('#requestMsg').className='err'; 
+    $('#requestMsg').textContent=String(err);
+  }finally{ 
+    $('#btnSend').disabled=false;
+    $('#btnSend').innerHTML = '<i class="fas fa-paper-plane"></i> Gửi';
+  }
+});
+/* ===== Giờ công ===== */
+async function loadHours(){
+  $('#hoursBox').innerHTML='<div class="spinner"></div> Đang tải...'; 
+  $('#hoursTable').classList.add('hidden');
+  $('#hoursHead').innerHTML=""; 
+  $('#hoursRow').innerHTML="";
+  
+  try{
+    const r = await api('hours', { token: state.token });
+    if (!r.ok){ 
+      $('#hoursBox').textContent=r.message||'Không tải được.'; 
+      return; 
+    }
+    
+    $('#hoursTitle').innerHTML = `<i class="fas fa-business-time"></i> ${r.title ? `${r.title} — ${state.empName}` : `Giờ Công — ${state.empName}`}`;
+    
+    let headerRows = Array.isArray(r.header) ? r.header : [];
+    let row = Array.isArray(r.row) ? r.row : [];
+    
+    if (headerRows.length < 2 || !row.length){
+      $('#hoursBox').textContent = "Không tìm thấy dữ liệu cho " + (state.empName||""); 
+      return;
+    }
+    
+    // Chuẩn hoá độ dài
+    const maxLen = Math.max(headerRows[0].length, headerRows[1].length, row.length);
+    headerRows = headerRows.map(a=>{ 
+      a=a.slice(0,maxLen); 
+      while(a.length<maxLen)a.push(""); 
+      return a; 
+    });
+    
+    row = row.slice(0,maxLen); 
+    while(row.length<maxLen) row.push("");
+    
+    renderTwoRowHeader(headerRows[0], headerRows[1]);
+    row.forEach(c=>{
+      const td=document.createElement('td'); 
+      td.textContent=c;
+      if (/^\d+([.,]\d+)?$/.test(String(c).trim())) td.classList.add('num');
+      $('#hoursRow').appendChild(td);
+    });
+    
+    $('#hoursBox').textContent=""; 
+    $('#hoursTable').classList.remove('hidden');
+  }catch(err){
+    $('#hoursBox').textContent = String(err);
+  }
+}
+// gộp cột theo header dòng 2 (ô trống nối vào ô trước)
+function renderTwoRowHeader(topRow, bottomRow){
+  const thead = $('#hoursHead');
+  const trTop = document.createElement('tr');
+  const trBot = document.createElement('tr');
+  const groups = [];
+  
+  for (let i=0;i<topRow.length;i++){
+    const t = String(topRow[i]||"").trim();
+    if (t==="" && groups.length) groups[groups.length-1].colspan += 1;
+    else groups.push({ text:t, colspan:1 });
+  }
+  
+  groups.forEach(g=>{
+    const th=document.createElement('th'); 
+    th.textContent=g.text||"";
+    if (g.colspan>1) th.colSpan=g.colspan;
+    trTop.appendChild(th);
+  });
+  
+  bottomRow.forEach(t=>{
+    const th=document.createElement('th'); 
+    th.textContent=t||""; 
+    trBot.appendChild(th);
+  });
+  
+  thead.appendChild(trTop); 
+  thead.appendChild(trBot);
+}
+</script>
+</body>
+</html>
