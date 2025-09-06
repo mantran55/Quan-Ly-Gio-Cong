@@ -3,11 +3,15 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Quản Lý Giờ Công - SB Biên Hoà</title>
+  <title>Quản Lý Giờ Công SB Biên Hoà</title>
+
+  <!-- Icons & Styles -->
   <link rel="stylesheet"
         href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <link rel="stylesheet" href="styles.css">
+  <link rel="icon" href="working.png">
 </head>
+
 <body class="theme-dark">
   <!-- Aurora background -->
   <div class="aurora">
@@ -16,12 +20,13 @@
 
   <header class="topbar">
     <div class="brand">
-      <div class="logo">HR</div>
+      <div class="logo">SB</div>
       <div class="title">SUNDAY GIỜ CÔNG</div>
     </div>
     <div class="actions-top">
-      <button id="themeToggle" class="ghost"><i class="fa-solid fa-moon"></i></button>
-      
+      <button id="btnLogout" class="ghost" type="button" title="Đăng xuất">
+        <i class="fa-solid fa-right-from-bracket"></i>
+      </button>
     </div>
   </header>
 
@@ -29,6 +34,7 @@
     <!-- LOGIN -->
     <section class="glass card" id="cardLogin">
       <h1><i class="fas fa-right-to-bracket"></i> Đăng nhập</h1>
+
       <div class="grid-2">
         <label class="field">
           <span>Email</span>
@@ -39,28 +45,37 @@
           <input id="password" type="password" placeholder="••••••••" autocomplete="new-password">
         </label>
       </div>
+
       <div class="row-actions">
-        <button id="btnLogin" class="btn"><i class="fa-solid fa-unlock"></i> Đăng nhập</button>
+        <button id="btnLogin" class="btn" type="button">
+          <i class="fa-solid fa-unlock"></i> Đăng nhập
+        </button>
         <span id="loginMsg" class="text-err"></span>
       </div>
+
       <p class="muted">Hệ thống quản lý giờ công Sunday Basic Biên Hoà</p>
     </section>
 
     <!-- APP -->
     <section class="glass card hidden" id="cardApp">
       <div class="subhead">
-        <div class="who" id="whoami"><i class="fa-regular fa-circle-user"></i></div>
+        <div class="who" id="whoami">
+          <i class="fa-regular fa-circle-user"></i>
+        </div>
       </div>
 
-      <div class="tabs">
-        <button class="tab active" data-tab="requestTab">Phiếu yêu cầu</button>
-        <button class="tab" data-tab="hoursTab">Giờ công của tôi</button>
-        <span class="underline"></span>
+      <div class="tabbar">
+        <div class="tabs">
+          <button class="tab active" data-tab="requestTab" type="button">Phiếu yêu cầu</button>
+          <button class="tab" data-tab="scheduleTab" type="button">Đăng ký lịch</button>
+          <button class="tab" data-tab="hoursTab" type="button">Giờ công của tôi</button>
+        </div>
       </div>
 
       <!-- Phiếu yêu cầu -->
       <div id="requestTab">
         <h2><i class="fa-regular fa-rectangle-list"></i> Tạo phiếu</h2>
+
         <div class="grid-2">
           <label class="field">
             <span>Vấn đề</span>
@@ -72,6 +87,7 @@
               </select>
             </div>
           </label>
+
           <label class="field">
             <span>Ngày khiếu nại / pass ca</span>
             <input id="requestDate" type="text" placeholder="dd-mm-yyyy">
@@ -83,9 +99,9 @@
           <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/vn.js"></script>
           <script>
             flatpickr("#requestDate", {
-              dateFormat: "d-m-Y",  
-              allowInput: true,    
-              locale: "vn"          
+              dateFormat: "d-m-Y",
+              allowInput: true,
+              locale: "vn"
             });
           </script>
         </div>
@@ -103,12 +119,15 @@
         </label>
 
         <div class="row-actions">
-          <button id="btnSend" class="btn"><i class="fa-solid fa-paper-plane"></i> Gửi</button>
+          <button id="btnSend" class="btn" type="button">
+            <i class="fa-solid fa-paper-plane"></i> Gửi
+          </button>
           <span id="requestMsg"></span>
         </div>
+
         <div class="list-header">
           <h3 class="subtle">Danh sách yêu cầu</h3>
-          <button id="btnRefreshReq" class="btn secondary">
+          <button id="btnRefreshReq" class="btn secondary" type="button">
             <i class="fa-solid fa-rotate"></i> Tải lại
           </button>
         </div>
@@ -128,12 +147,9 @@
             <tbody id="reqBody"></tbody>
           </table>
         </div>
-              <hr class="softline">
+
+        <hr class="softline">
       </div>
-      
-
-      
-
 
       <!-- Giờ công -->
       <div id="hoursTab" class="hidden">
@@ -143,8 +159,39 @@
         <div class="table-wrap">
           <table id="hoursTable" class="hidden">
             <thead id="hoursHead"></thead>
-            <tbody><tr id="hoursRow"></tr></tbody>
+            <tbody>
+              <tr id="hoursRow"></tr>
+            </tbody>
           </table>
+        </div>
+      </div>
+
+      <!-- Đăng ký lịch -->
+      <div id="scheduleTab" class="hidden">
+        <div class="list-header">
+          <h3 class="subtle">
+            <i class="fa-regular fa-calendar-check"></i> Đăng ký lịch
+          </h3>
+          <div class="row-actions">
+            <button id="btnSchedReload" class="btn secondary" type="button">
+              <i class="fa-solid fa-rotate"></i> Tải lại
+            </button>
+            <button id="btnSchedClear" class="btn ghost" type="button">
+              <i class="fa-regular fa-circle-xmark"></i> Bỏ chọn
+            </button>
+            <button id="btnSchedSave" class="btn" type="button">
+              <i class="fa-solid fa-floppy-disk"></i> Lưu đăng ký
+            </button>
+          </div>
+        </div>
+
+        <div id="schedGrid" class="sched-grid"><!-- cards --></div>
+
+        <div class="note-panel">
+          <label class="field">
+            <span>Ghi chú (tùy chọn)</span>
+            <textarea id="scheduleNote" rows="2" placeholder="Ví dụ: muốn đổi ca thứ 5..."></textarea>
+          </label>
         </div>
       </div>
     </section>
@@ -153,7 +200,8 @@
   <footer class="footer">© 2025 Sunday Basic Biên Hoà</footer>
 
   <div class="toast-container" id="toastContainer"></div>
-  <script src="app.js"></script>
+
+  <!-- App script -->
+  <script src="app.js" defer></script>
 </body>
 </html>
-

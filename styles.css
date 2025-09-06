@@ -1,4 +1,4 @@
-:root{ --bg:#0b1220; --card:#0f172a; --muted:#93a4b8; --text:#e5eef7;
+:root{ --bg:#0b1220; --card:#0f172a; --muted:#ffffff; --text:#ffffff;
   --pri:#3b82f6; --pri-2:#1d4ed8; --ok:#10b981; --err:#ef4444; --bd:#1f2a44;
   --transition: all .3s cubic-bezier(.4,0,.2,1); }
 *{ box-sizing:border-box }
@@ -88,8 +88,8 @@ th{text-align:center} td{text-align:center} td.num{text-align:right}
 }
 /* ---------- Theme tokens ---------- */
 :root{
-  --bg:#0a0f1c; --text:#eaf1ff; --muted:#9fb1ca;
-  --glass:rgba(255,255,255,.06); --glass-bd:rgba(255,255,255,.18);
+  --bg:#0a0f1c; --text:#eaf1ff; --muted:#ffffff;
+  --glass:rgba(237, 221, 221, 0.06); --glass-bd:rgba(255, 255, 255, 0.18);
   --pri:#6aa7ff; --pri-2:#4777ff; --ok:#2ad5a5; --err:#ff6b7a;
   --ring:rgba(110,160,255,.35);
 }
@@ -327,3 +327,125 @@ select::-ms-expand{ display:none; }
   gap: 8px;
 }
 
+.sched-grid{
+  display:grid;
+  grid-template-columns: repeat(auto-fill,minmax(210px,1fr));
+  gap:12px; margin:10px 0;
+}
+.sched-card{
+  border:1px solid var(--bd);
+  background: rgba(255,255,255,.02);
+  border-radius:12px; padding:12px;
+}
+.sched-card h4{ margin:0 0 8px; font-size:14px; }
+.sched-cks{ display:flex; gap:10px; flex-wrap:wrap; }
+.sched-cks label{ display:flex; align-items:center; gap:6px; }
+
+thead th, td { white-space: nowrap; }
+
+/* Schedule grid */
+.sched-grid{
+  display:grid; gap:16px;
+  grid-template-columns: repeat(4, minmax(0,1fr));
+}
+@media(max-width:1100px){ .sched-grid{ grid-template-columns: repeat(3,1fr);} }
+@media(max-width:800px){  .sched-grid{ grid-template-columns: repeat(2,1fr);} }
+@media(max-width:520px){  .sched-grid{ grid-template-columns: 1fr;} }
+
+.shift-card{
+  background: linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.03));
+  border: 1px solid rgba(255,255,255,.12);
+  border-radius: 18px; padding:16px 14px;
+  backdrop-filter: blur(8px);
+  box-shadow: 0 10px 30px rgba(0,0,0,.25);
+  transition: transform .15s ease, box-shadow .2s ease, border-color .2s ease;
+}
+.shift-card:hover{
+  transform: translateY(-2px);
+  box-shadow: 0 14px 36px rgba(0,0,0,.32);
+  border-color: rgba(59,130,246,.45);
+}
+.shift-head{
+  display:flex; align-items:center; justify-content:space-between;
+  font-weight:600; margin-bottom:10px;
+}
+.shift-date{ color:var(--muted); font-size:13px; }
+.shift-actions{ display:flex; gap:8px; flex-wrap:wrap; }
+
+/* chip-style shift buttons */
+.ca-btn{
+  padding:8px 12px; border-radius:999px;
+  border:1px solid var(--bd);
+  background: rgba(255,255,255,.06);
+  color:var(--text); font-weight:600; font-size:13px;
+  letter-spacing:.2px; cursor:pointer;
+  transition: background .2s, border-color .2s, transform .05s;
+  user-select:none;
+}
+.ca-btn:hover{ border-color:var(--pri); }
+.ca-btn:active{ transform: translateY(1px); }
+
+/* selected */
+.ca-btn.active{
+  background: linear-gradient(180deg, var(--pri), var(--pri-2));
+  border-color: transparent; color:#fff;
+  box-shadow: 0 6px 20px rgba(59,130,246,.35);
+}
+
+/* small helper */
+.badge{
+  display:inline-flex; gap:6px; align-items:center;
+  font-size:12px; color:var(--muted);
+}
+
+/* Thanh công cụ chứa tab + nút */
+.tabbar{
+  display:flex;
+  align-items:center;
+  gap:12px;
+  flex-wrap:nowrap;              /* KHÔNG cho xuống dòng */
+}
+
+/* Vùng tabs: cho cuộn ngang, không wrap */
+.tabs{
+  display:flex;
+  gap:10px;
+  flex:1 1 auto;                 /* chiếm phần còn lại */
+  min-width:0;                   /* để overflow-x hoạt động */
+  overflow-x:auto;               /* cuộn ngang trên mobile */
+  -webkit-overflow-scrolling:touch;
+  white-space:nowrap;
+  scrollbar-width:none;          /* ẩn scrollbar (Firefox) */
+}
+.tabs::-webkit-scrollbar{ display:none; } /* ẩn scrollbar (Chrome) */
+.tabs .tab{ flex:0 0 auto; }     /* mỗi tab là một “chip” không co giãn */
+
+
+.tab-actions{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  flex:0 0 auto;               
+}
+
+@media (max-width: 640px){
+  .tabbar{ gap:8px; }
+  .tabs .tab{ padding:8px 12px; font-size:13px; }
+  .tab-actions .btn{ padding:8px 10px; font-size:13px; }
+
+  .tab-actions{ flex:0 1 auto; }
+}
+
+.note-wrap{margin:10px 0 6px}
+.note-wrap label{display:block;font-size:13px;color:var(--muted);margin-bottom:6px}
+#scheduleNote {
+    width: 100%;
+    background: rgba(255, 255, 255, .06);
+    color: #dee0e4;
+    border: 1px solid var(--glass-bd);
+    border-radius: 12px;
+    padding: 8px 10px;
+    min-height: 40px;
+    resize: vertical;
+}
+#scheduleNote:focus{border-color:#385bff; box-shadow:0 0 0 3px rgba(56,91,255,.2)}
