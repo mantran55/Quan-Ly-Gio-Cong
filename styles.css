@@ -62,6 +62,24 @@ th{text-align:center} td{text-align:center} td.num{text-align:right}
 .toast-icon{ font-size:20px } .toast.success .toast-icon{ color:var(--ok) } .toast.error .toast-icon{ color:var(--err) } .toast.info .toast-icon{ color:var(--pri) }
 .toast-message{ flex:1 } .toast-close{ background:none; border:none; color:var(--muted); cursor:pointer; font-size:16px; width:24px; height:24px; display:flex; align-items:center; justify-content:center; border-radius:4px; transition:var(--transition); }
 .toast-close:hover{ background:rgba(255,255,255,.1); color:var(--text); }
+/* Khớp class theo JS: .ok / .err */
+.toast.ok  { border-color: var(--ok); }
+.toast.err { border-color: var(--err); }
+
+/* Icon đầu tiên trong toast (JS không gắn .toast-icon) */
+.toast > i { font-size: 20px; }
+
+/* (Tuỳ chọn) tô màu icon theo trạng thái */
+.toast.ok  > i { color: var(--ok); }
+.toast.err > i { color: var(--err); }
+
+/* Giữ hiệu ứng vào, KHÔNG auto ẩn bằng CSS */
+.toast {
+  animation: slideIn .3s forwards; /* không có slideOut */
+  opacity: 0;
+  transform: translateX(100%);
+}
+
 
 .spinner{ display:inline-block; width:16px; height:16px; border:2px solid rgba(255,255,255,.3); border-radius:50%; border-top-color:#fff; animation:spin .8s linear infinite; }
 @keyframes slideIn{ to{ opacity:1; transform:translateX(0) } }
@@ -449,4 +467,5 @@ thead th, td { white-space: nowrap; }
     resize: vertical;
 }
 #scheduleNote:focus{border-color:#385bff; box-shadow:0 0 0 3px rgba(56,91,255,.2)}
+
 
