@@ -217,6 +217,48 @@ if (issueSel){
 
 }
 
+// Đếm số lần pass ca của chính nhân viên hiện tại (client-side để nhắc sớm)
+function countMyPassCa(rows){
+  var me = (state.empName || '').trim().toLowerCase();
+  var c = 0;
+  rows.forEach(function(r){
+    var name  = String(r.name  || '').trim().toLowerCase();
+    var issue = String(r.issue || '').trim().toLowerCase();
+    if (name === me && issue === 'pass ca') c++;
+  });
+  return c;
+}
+
+// Khi chọn "Vấn đề"
+var issueSel = $('#issueType');
+if (issueSel){
+  issueSel.addEventListener('change', function(){
+    var isPass = (issueSel.value === 'pass ca');
+    var row = $('#passCaRow');
+    if (row) row.classList.toggle('hidden', !isPass);
+
+    // Nếu chọn pass ca → kiểm tra số lần đã pass trước đó để cảnh báo sớm
+    if (isPass) {
+      api('listRequests', { token: state.token, limit: 500 })
+        .then(function(r){
+          if (!r || !r.ok) return;
+          var n = countMyPassCa(r.rows || []);
+          var btn = $('#btnSend');
+          if (n >= 5 && btn){
+            btn.disabled = true;
+            toast('Đã pass ca tối đa 5 lần. Bạn không còn quyền pass ca nữa — Hãy làm chăm chỉ.', 'error');
+          } else if (btn) {
+            btn.disabled = false;
+          }
+        })
+        .catch(function(){ /* im lặng cũng được, server vẫn chặn */ });
+    } else {
+      var btn = $('#btnSend'); if (btn) btn.disabled = false;
+    }
+  });
+}
+
+
 /* ===== Phiếu yêu cầu ===== */
 var btnRefresh = $('#btnRefreshReq');
 if (btnRefresh) btnRefresh.addEventListener('click', loadRequestList);
@@ -552,3 +594,4 @@ function restoreSession(){
 
   loadRequestList();
 }
+
