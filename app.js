@@ -244,7 +244,7 @@ if (issueSel){
           if (!r || !r.ok) return;
           var n = countMyPassCa(r.rows || []);
           var btn = $('#btnSend');
-          if (n >= 5 && btn){
+          if (n > 5 && btn){
             btn.disabled = true;
             toast('Đã pass ca tối đa 5 lần. Bạn không còn quyền pass ca nữa — Hãy làm chăm chỉ.', 'error');
           } else if (btn) {
@@ -594,4 +594,5 @@ function restoreSession(){
 
   loadRequestList();
 }
+
 
