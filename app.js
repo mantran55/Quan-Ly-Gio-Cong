@@ -21,7 +21,7 @@ function toast(msg, type){
     '<button class="toast-close" aria-label="close"><i class="fa-solid fa-xmark"></i></button>';
   el.querySelector('.toast-close').onclick = function(){ el.remove(); };
   box.appendChild(el);
-  setTimeout(function(){ el.remove(); }, 7000);
+  setTimeout(function(){ el.remove(); }, 10000);
 }
 
 function api(path, data){
@@ -594,6 +594,7 @@ function restoreSession(){
 
   loadRequestList();
 }
+
 
 
 
