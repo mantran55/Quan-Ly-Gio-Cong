@@ -57,7 +57,7 @@ th{text-align:center} td{text-align:center} td.num{text-align:right}
 
 .toast-container{ position:fixed; top:20px; right:20px; z-index:1000; display:flex; flex-direction:column; gap:10px; }
 .toast{ background:#0f172a; border-left:4px solid; border-radius:8px; padding:16px; min-width:250px; box-shadow:0 10px 25px rgba(0,0,0,.3);
-  display:flex; align-items:center; gap:12px; animation:slideIn .3s forwards, slideOut .3s 2.7s forwards; opacity:0; transform:translateX(100%); }
+  display:flex; align-items:center; gap:12px; animation:slideIn .3s forwards; opacity:0; transform:translateX(100%); }
 .toast.success{ border-color:var(--ok) } .toast.error{ border-color:var(--err) } .toast.info{ border-color:var(--pri) }
 .toast-icon{ font-size:20px } .toast.success .toast-icon{ color:var(--ok) } .toast.error .toast-icon{ color:var(--err) } .toast.info .toast-icon{ color:var(--pri) }
 .toast-message{ flex:1 } .toast-close{ background:none; border:none; color:var(--muted); cursor:pointer; font-size:16px; width:24px; height:24px; display:flex; align-items:center; justify-content:center; border-radius:4px; transition:var(--transition); }
@@ -449,3 +449,4 @@ thead th, td { white-space: nowrap; }
     resize: vertical;
 }
 #scheduleNote:focus{border-color:#385bff; box-shadow:0 0 0 3px rgba(56,91,255,.2)}
+
