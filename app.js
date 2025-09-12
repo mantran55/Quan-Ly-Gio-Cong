@@ -148,29 +148,27 @@ document.addEventListener('click', function(e){
     var who = $('#whoami');
     if (who) who.innerHTML = escapeHtml(state.empName) + ' <span class="muted">(' + escapeHtml(state.email) + ')</span>';
 
-    // Employees
     // Employees (robust parsing, không dùng await ở đây)
-api('employees', {})
-  .then(function(res){
-    var arr = [];
-    if (Array.isArray(res)) arr = res;                   // API trả mảng trực tiếp
-    else if (res && Array.isArray(res.rows)) arr = res.rows; // { rows: [...] }
-    else if (res && Array.isArray(res.data)) arr = res.data; // { data: [...] }
+    api('employees', {})
+      .then(function(res){
+        var arr = [];
+        if (Array.isArray(res)) arr = res;                   // API trả mảng trực tiếp
+        else if (res && Array.isArray(res.rows)) arr = res.rows; // { rows: [...] }
+        else if (res && Array.isArray(res.data)) arr = res.data; // { data: [...] }
 
-    state.employees = (arr || []).filter(Boolean).map(String);
+        state.employees = (arr || []).filter(Boolean).map(String);
 
-    var sel = $('#passEmployee');
-    if (sel){
-      sel.innerHTML = '<option value="">-- Chọn nhân viên --</option>';
-      state.employees.forEach(function(n){
-        sel.insertAdjacentHTML('beforeend', '<option>'+ escapeHtml(n) +'</option>');
+        var sel = $('#passEmployee');
+        if (sel){
+          sel.innerHTML = '<option value="">-- Chọn nhân viên --</option>';
+          state.employees.forEach(function(n){
+            sel.insertAdjacentHTML('beforeend', '<option>'+ escapeHtml(n) +'</option>');
+          });
+        }
+      })
+      .catch(function(e){
+        console.warn('employees load failed', e);
       });
-    }
-  })
-  .catch(function(e){
-    console.warn('employees load failed', e);
-  });
-
 
     var login = $('#cardLogin'); if (login) login.classList.add('hidden');
     var app = $('#cardApp'); if (app) app.classList.remove('hidden');
@@ -186,36 +184,7 @@ api('employees', {})
   });
 });
 
-/* Toggle pass-ca employee row */
-var issueSel = $('#issueType');
-if (issueSel){
-  issueSel.addEventListener('change', function(){
-  var isPass = (issueSel.value === 'pass ca');
-  var row = $('#passCaRow');
-  if (row) row.classList.toggle('hidden', !isPass);
-
-  // Nếu vừa chọn "pass ca" mà chưa có danh sách -> tải ngay
-  if (isPass && (!state.employees || state.employees.length === 0)) {
-    api('employees', {})
-      .then(function(res){
-        var arr = Array.isArray(res) ? res : ((res && res.rows) || (res && res.data) || []);
-        state.employees = (arr || []).filter(Boolean).map(String);
-
-        var sel = $('#passEmployee');
-        if (sel){
-          sel.innerHTML = '<option value="">-- Chọn nhân viên --</option>';
-          state.employees.forEach(function(n){
-            sel.insertAdjacentHTML('beforeend', '<option>'+ escapeHtml(n) +'</option>');
-          });
-        }
-      })
-      .catch(function(){
-        toast('Không tải được danh sách nhân viên', 'error');
-      });
-    }
-  });
-
-}
+/* ===== Toggle “pass ca”: show select nhân viên + chọn ca + kiểm tra 5 lần ===== */
 
 // Đếm số lần pass ca của chính nhân viên hiện tại (client-side để nhắc sớm)
 function countMyPassCa(rows){
@@ -229,39 +198,70 @@ function countMyPassCa(rows){
   return c;
 }
 
-// Khi chọn "Vấn đề"
+// 1 listener duy nhất cho #issueType
 var issueSel = $('#issueType');
 if (issueSel){
   issueSel.addEventListener('change', function(){
     var isPass = (issueSel.value === 'pass ca');
-    var row = $('#passCaRow');
-    if (row) row.classList.toggle('hidden', !isPass);
+
+    var rowEmp   = $('#passCaRow');
+    var rowShift = $('#passShiftRow'); // dòng chọn ca (có trong HTML mới)
+    if (rowEmp)   rowEmp.classList.toggle('hidden', !isPass);
+    if (rowShift) rowShift.classList.toggle('hidden', !isPass);
+
+    // Nếu vừa chọn "pass ca" mà chưa có danh sách -> tải ngay
+    if (isPass && (!state.employees || state.employees.length === 0)) {
+      api('employees', {})
+        .then(function(res){
+          var arr = Array.isArray(res) ? res : ((res && res.rows) || (res && res.data) || []);
+          state.employees = (arr || []).filter(Boolean).map(String);
+
+          var sel = $('#passEmployee');
+          if (sel){
+            sel.innerHTML = '<option value="">-- Chọn nhân viên --</option>';
+            state.employees.forEach(function(n){
+              sel.insertAdjacentHTML('beforeend', '<option>'+ escapeHtml(n) +'</option>');
+            });
+          }
+        })
+        .catch(function(){
+          toast('Không tải được danh sách nhân viên', 'error');
+        });
+    }
 
     // Nếu chọn pass ca → kiểm tra số lần đã pass trước đó để cảnh báo sớm
+    var btn = $('#btnSend');
+    if (btn) btn.disabled = false;
+
     if (isPass) {
       api('listRequests', { token: state.token, limit: 500 })
         .then(function(r){
           if (!r || !r.ok) return;
           var n = countMyPassCa(r.rows || []);
-          var btn = $('#btnSend');
-          if (n >= 5 && btn){
-            btn.disabled = true;
+          var btn2 = $('#btnSend');
+          if (n >= 5 && btn2){
+            btn2.disabled = true;
             toast('Đã pass ca tối đa 5 lần. Bạn không còn quyền pass ca nữa — Hãy làm chăm chỉ.', 'error');
-          } else if (btn) {
-            btn.disabled = false;
           }
         })
         .catch(function(){ /* im lặng cũng được, server vẫn chặn */ });
-    } else {
-      var btn = $('#btnSend'); if (btn) btn.disabled = false;
     }
   });
 }
 
-
 /* ===== Phiếu yêu cầu ===== */
 var btnRefresh = $('#btnRefreshReq');
 if (btnRefresh) btnRefresh.addEventListener('click', loadRequestList);
+
+// parse dd-mm-yyyy hoặc dd/mm/yyyy về Date(00:00)
+function parseDMY(dmy){
+  if (!dmy) return null;
+  var m = dmy.trim().replace(/\//g,'-').match(/^(\d{1,2})-(\d{1,2})-(\d{4})$/);
+  if (!m) return null;
+  var d = Number(m[1]), mo = Number(m[2]) - 1, y = Number(m[3]);
+  var dt = new Date(y, mo, d, 0, 0, 0, 0); // local
+  return isNaN(dt.getTime()) ? null : dt;
+}
 
 var btnSend = $('#btnSend');
 if (btnSend){
@@ -269,26 +269,68 @@ if (btnSend){
     var issueType = $('#issueType') ? $('#issueType').value : '';
     var requestDate = $('#requestDate') ? $('#requestDate').value.trim() : '';
     var passEmployee = (issueType === 'pass ca') ? ($('#passEmployee') ? $('#passEmployee').value : '') : '';
+    var passShift    = (issueType === 'pass ca') ? ($('#passShift') ? $('#passShift').value : '') : '';
     var content = $('#content') ? $('#content').value.trim() : '';
 
     if (!issueType) { toast('Chọn loại vấn đề','error'); return; }
     if (!requestDate) { toast('Nhập ngày','error'); return; }
     if (issueType === 'pass ca' && !passEmployee) { toast('Chọn nhân viên pass ca','error'); return; }
+    if (issueType === 'pass ca' && !passShift)    { toast('Chọn ca cần pass','error'); return; }
     if (!content) { toast('Nhập nội dung','error'); return; }
+
+    // ===== Kiểm tra ràng buộc thời gian cho pass ca =====
+    if (issueType === 'pass ca') {
+      var passDate = parseDMY(requestDate);
+      if (!passDate){ toast('Ngày pass ca không hợp lệ (định dạng dd-mm-yyyy).', 'error'); return; }
+
+      var now = new Date();
+      var today0 = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0,0,0,0);
+      var diffDays = Math.floor((passDate.getTime() - today0.getTime()) / (24*3600*1000));
+
+      if (diffDays < 0) {
+        toast('Ngày pass ca đã qua — không thể gửi.', 'error');
+        return;
+      }
+
+      if (diffDays === 0) {
+        // Cùng ngày: cutoff theo ca — ca1: 05:00, ca2: 10:00, ca3: 15:00
+        var cutoffMap = { ca1:{h:5,m:0}, ca2:{h:10,m:0}, ca3:{h:15,m:0} };
+        var cfg = cutoffMap[String(passShift || '').toLowerCase()];
+        if (!cfg){ toast('Vui lòng chọn ca hợp lệ.', 'error'); return; }
+
+        var cutoff = new Date(now.getFullYear(), now.getMonth(), now.getDate(), cfg.h, cfg.m, 0, 0);
+        if (now.getTime() > cutoff.getTime()){
+          toast('Bạn cần phải tạo Pass ca trước 2 tiếng. Phiếu của bạn không được duyệt.', 'error');
+          return;
+        }
+      }
+      // diffDays >= 1 -> OK
+    }
 
     btnSend.disabled = true;
     var old = btnSend.innerHTML;
     btnSend.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Đang gửi…';
 
-    api('submit', { token: state.token, payload:{ issueType:issueType, requestDate:requestDate, passEmployee:passEmployee, content:content } })
+    api('submit', {
+      token: state.token,
+      payload:{
+        issueType: issueType,
+        requestDate: requestDate,
+        passEmployee: passEmployee,
+        passShift: passShift,     // gửi ca lên server
+        content: content
+      }
+    })
     .then(function(r){
       if (!r || !r.ok){ toast((r && r.message) ? r.message : 'Gửi thất bại', 'error'); return; }
 
       var isel = $('#issueType'); if (isel) isel.value = '';
       var dsel = $('#requestDate'); if (dsel) dsel.value = '';
       var psel = $('#passEmployee'); if (psel) psel.value = '';
+      var ssel = $('#passShift'); if (ssel) ssel.value = '';
       var csel = $('#content'); if (csel) csel.value = '';
-      var row = $('#passCaRow'); if (row) row.classList.add('hidden');
+      var row1 = $('#passCaRow'); if (row1) row1.classList.add('hidden');
+      var row2 = $('#passShiftRow'); if (row2) row2.classList.add('hidden');
 
       toast('Đã gửi phiếu yêu cầu!', 'ok');
       loadRequestList();
@@ -594,8 +636,3 @@ function restoreSession(){
 
   loadRequestList();
 }
-
-
-
-
-
