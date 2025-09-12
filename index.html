@@ -83,7 +83,7 @@
               <select id="issueType">
                 <option value="">-- Chọn vấn đề --</option>
                 <option value="Khiếu nại giờ công">Khiếu nại giờ công</option>
-                <option value="pass ca">pass ca</option>
+                <option value="pass ca">Pass ca</option>
               </select>
             </div>
           </label>
@@ -107,11 +107,25 @@
         </div>
 
         <label class="field hidden" id="passCaRow">
-          <span>Chọn nhân viên (khi chọn “pass ca”)</span>
+          <span>Chọn nhân viên cần pass ca</span>
           <div class="select-wrap">
             <select id="passEmployee"></select>
           </div>
         </label>
+
+        <!-- ▼ THÊM: chọn Ca khi pass ca -->
+        <label class="field hidden" id="passShiftRow">
+          <span>Chọn ca cần pass</span>
+          <div class="select-wrap">
+            <select id="passShift">
+              <option value="">-- Chọn ca --</option>
+              <option value="ca1">Ca 1</option>
+              <option value="ca2">Ca 2</option>
+              <option value="ca3">Ca 3</option>
+            </select>
+          </div>
+        </label>
+        <!-- ▲ HẾT PHẦN THÊM -->
 
         <label class="field">
           <span>Nội dung trình bày</span>
@@ -205,4 +219,3 @@
   <script src="app.js" defer></script>
 </body>
 </html>
-
