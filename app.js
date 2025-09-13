@@ -278,7 +278,6 @@ if (btnSend){
     if (issueType === 'pass ca' && !passShift)    { toast('Chọn ca cần pass','error'); return; }
     if (!content) { toast('Nhập nội dung','error'); return; }
 
-    // ===== Kiểm tra ràng buộc thời gian cho pass ca =====
     if (issueType === 'pass ca') {
       var passDate = parseDMY(requestDate);
       if (!passDate){ toast('Ngày pass ca không hợp lệ (định dạng dd-mm-yyyy).', 'error'); return; }
@@ -293,7 +292,6 @@ if (btnSend){
       }
 
       if (diffDays === 0) {
-        // Cùng ngày: cutoff theo ca — ca1: 05:00, ca2: 10:00, ca3: 15:00
         var cutoffMap = { ca1:{h:5,m:0}, ca2:{h:10,m:0}, ca3:{h:15,m:0} };
         var cfg = cutoffMap[String(passShift || '').toLowerCase()];
         if (!cfg){ toast('Vui lòng chọn ca hợp lệ.', 'error'); return; }
@@ -304,12 +302,19 @@ if (btnSend){
           return;
         }
       }
-      // diffDays >= 1 -> OK
+
     }
 
     btnSend.disabled = true;
     var old = btnSend.innerHTML;
     btnSend.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Đang gửi…';
+
+    var contentToSend = content;
+    if (issueType === 'pass ca') {
+      var labelMap = { ca1: 'ca 1', ca2: 'ca 2', ca3: 'ca 3' };
+      var label = labelMap[String(passShift || '').toLowerCase()] || '';
+      if (label) contentToSend = (content + ' ' + label).trim();
+    }
 
     api('submit', {
       token: state.token,
@@ -317,8 +322,8 @@ if (btnSend){
         issueType: issueType,
         requestDate: requestDate,
         passEmployee: passEmployee,
-        passShift: passShift,     // gửi ca lên server
-        content: content
+        passShift: passShift,     
+        content: contentToSend   
       }
     })
     .then(function(r){
