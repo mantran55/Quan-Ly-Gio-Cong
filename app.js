@@ -37,7 +37,7 @@ function api(path, data){
 }
 
 /* ===== State ===== */
-var state = { token:null, email:null, empName:null, employees:[] };
+var state = { token:null, email:null, empName:null, employees:[], hoursTotals:{} };
 
 /* ===== Theme toggle (không dùng cũng không sao) ===== */
 var themeBtn = $('#themeToggle');
@@ -148,13 +148,13 @@ document.addEventListener('click', function(e){
     var who = $('#whoami');
     if (who) who.innerHTML = escapeHtml(state.empName) + ' <span class="muted">(' + escapeHtml(state.email) + ')</span>';
 
-    // Employees (robust parsing, không dùng await ở đây)
+    // Employees
     api('employees', {})
       .then(function(res){
         var arr = [];
-        if (Array.isArray(res)) arr = res;                   // API trả mảng trực tiếp
-        else if (res && Array.isArray(res.rows)) arr = res.rows; // { rows: [...] }
-        else if (res && Array.isArray(res.data)) arr = res.data; // { data: [...] }
+        if (Array.isArray(res)) arr = res;
+        else if (res && Array.isArray(res.rows)) arr = res.rows;
+        else if (res && Array.isArray(res.data)) arr = res.data;
 
         state.employees = (arr || []).filter(Boolean).map(String);
 
@@ -168,6 +168,23 @@ document.addEventListener('click', function(e){
       })
       .catch(function(e){
         console.warn('employees load failed', e);
+      });
+
+    // Tổng giờ mọi nhân viên (để kiểm tra PASS CA > 200)
+    api('hoursTotals', { token: state.token })
+      .then(function(res){
+        var map = {};
+        if (res && res.ok && Array.isArray(res.totals)) {
+          res.totals.forEach(function(x){
+            var name = String(x.name||'').trim();
+            var total = Number(x.total||0);
+            if (name) map[name.toLowerCase()] = total;
+          });
+        }
+        state.hoursTotals = map; // { 'nguyễn văn a': 205, ... }
+      })
+      .catch(function(e){
+        console.warn('hoursTotals load failed', e);
       });
 
     var login = $('#cardLogin'); if (login) login.classList.add('hidden');
@@ -184,7 +201,7 @@ document.addEventListener('click', function(e){
   });
 });
 
-/* ===== Toggle “pass ca”: show select nhân viên + chọn ca + kiểm tra 5 lần ===== */
+/* ===== Toggle “pass ca”: show select nhân viên + chọn ca + kiểm tra giới hạn ===== */
 
 // Đếm số lần pass ca của chính nhân viên hiện tại (client-side để nhắc sớm)
 function countMyPassCa(rows){
@@ -244,7 +261,23 @@ if (issueSel){
             toast('Đã pass ca tối đa 5 lần. Bạn không còn quyền pass ca nữa — Hãy làm chăm chỉ.', 'error');
           }
         })
-        .catch(function(){ /* im lặng cũng được, server vẫn chặn */ });
+        .catch(function(){ /* im lặng cũng được */ });
+    }
+  });
+}
+
+// Khi chọn nhân viên nhận pass → cảnh báo nếu >200 giờ
+var passEmpSel = $('#passEmployee');
+if (passEmpSel){
+  passEmpSel.addEventListener('change', function(){
+    var name = (passEmpSel.value || '').trim();
+    var total = state.hoursTotals[(name||'').toLowerCase()] || 0;
+    var btn = $('#btnSend');
+    if (total > 200){
+      toast(name + ' đã có hơn 200 giờ công, không thể thực hiện pass ca.', 'error');
+      if (btn) btn.disabled = true;
+    } else {
+      if (btn) btn.disabled = false;
     }
   });
 }
@@ -278,6 +311,17 @@ if (btnSend){
     if (issueType === 'pass ca' && !passShift)    { toast('Chọn ca cần pass','error'); return; }
     if (!content) { toast('Nhập nội dung','error'); return; }
 
+    // Nếu là pass ca → kiểm tra tổng giờ (FE) trước khi gửi
+    if (issueType === 'pass ca') {
+      var name = (passEmployee || '').trim();
+      var totalLocal = state.hoursTotals[(name||'').toLowerCase()] || 0;
+      if (totalLocal > 200){
+        toast(name + ' đã có hơn 200 giờ công, không thể thực hiện pass ca.', 'error');
+        return;
+      }
+    }
+
+    // Kiểm tra cutoff theo ca (same as trước)
     if (issueType === 'pass ca') {
       var passDate = parseDMY(requestDate);
       if (!passDate){ toast('Ngày pass ca không hợp lệ (định dạng dd-mm-yyyy).', 'error'); return; }
@@ -302,7 +346,6 @@ if (btnSend){
           return;
         }
       }
-
     }
 
     btnSend.disabled = true;
@@ -322,12 +365,15 @@ if (btnSend){
         issueType: issueType,
         requestDate: requestDate,
         passEmployee: passEmployee,
-        passShift: passShift,     
-        content: contentToSend   
+        passShift: passShift,
+        content: contentToSend
       }
     })
     .then(function(r){
-      if (!r || !r.ok){ toast((r && r.message) ? r.message : 'Gửi thất bại', 'error'); return; }
+      if (!r || !r.ok){
+        toast((r && r.message) ? r.message : 'Gửi thất bại', 'error'); 
+        return; 
+      }
 
       var isel = $('#issueType'); if (isel) isel.value = '';
       var dsel = $('#requestDate'); if (dsel) dsel.value = '';
@@ -609,6 +655,7 @@ if (btnLogout){
     state.email = null;
     state.empName = null;
     state.employees = [];
+    state.hoursTotals = {};
 
     // Chuyển UI về màn login
     var app = $('#cardApp'); if (app) app.classList.add('hidden');
@@ -638,6 +685,21 @@ function restoreSession(){
 
   var login = $('#cardLogin'); if (login) login.classList.add('hidden');
   var app = $('#cardApp'); if (app) app.classList.remove('hidden');
+
+  // Tải totals để sẵn dùng khi vào thẳng app từ phiên cũ
+  api('hoursTotals', { token: state.token })
+    .then(function(res){
+      var map = {};
+      if (res && res.ok && Array.isArray(res.totals)) {
+        res.totals.forEach(function(x){
+          var name = String(x.name||'').trim();
+          var total = Number(x.total||0);
+          if (name) map[name.toLowerCase()] = total;
+        });
+      }
+      state.hoursTotals = map;
+    })
+    .catch(function(e){ console.warn('hoursTotals (restore) failed', e); });
 
   loadRequestList();
 }
