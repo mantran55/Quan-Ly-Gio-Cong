@@ -82,21 +82,25 @@ function makeApiCall(path, data) {
 }
 
 // Làm mới token bằng cách đăng nhập lại
+// Hàm làm mới token (ĐÃ SỬA LỖI VÒNG LẶP VÔ TẬN)
 function refreshToken() {
   if (!state.credentials) return Promise.reject(new Error('No credentials to refresh token.'));
   
   console.log("Token is expiring, refreshing...");
-  return api('login', { 
+  
+  // === THAY ĐỔI CHÍNH: GỌI TRỰC TIẾP makeApiCall THAY VÌ api ===
+  // Điều này bỏ qua việc kiểm tra token và phá vỡ vòng lặp vô tận
+  return makeApiCall('login', { 
     email: state.credentials.email, 
     password: state.credentials.password 
   }).then(function(r) {
     if (!r || !r.ok) {
       throw new Error('Token refresh failed');
     }
+    
     // Cập nhật token và thời gian hết hạn mới
     state.token = r.token;
-    // Giả sử token có hiệu lực 1 giờ (3600000 ms)
-    state.tokenExpiry = new Date().getTime() + 3600000; 
+    state.tokenExpiry = new Date().getTime() + 3600000; // Giả sử token có hiệu lực 1 giờ
     
     // Lưu token mới vào localStorage
     try {
