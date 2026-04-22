@@ -2,29 +2,350 @@
 <html lang="vi">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
   <title>Quản Lý Giờ Công SB Biên Hoà</title>
 
   <!-- Icons & Styles -->
-  <link rel="stylesheet"
-        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <link rel="icon" href="working.png">
-</head>
+  
+  <!-- Flatpickr CSS + JS -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+  <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/vn.js"></script>
 
-<body class="theme-dark">
-  <!-- Aurora background -->
-  <div class="aurora">
-    <span></span><span></span><span></span><span></span>
-  </div>
+  <style>
+    /* ===== 1. THEME & VARIABLES (Cyberpunk Dark) ===== */
+    :root {
+      --bg-deep: #030508;
+      --bg-panel: rgba(10, 15, 25, 0.85);
+      --bg-input: rgba(255, 255, 255, 0.03);
+      --bg-input-focus: #1e293b; /* Nền sáng hơn khi focus */
+      
+      --primary: #1669b2;
+      --primary-glow: rgba(59, 130, 246, 0.6);
+      --accent: #06b6d4;
+      --accent-glow: rgba(6, 182, 212, 0.3);
+      
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+      --border: rgba(255, 255, 255, 0.1);
+      
+      --radius-lg: 20px;
+      --radius-sm: 12px;
+      --nav-height: 70px;
+    }
+
+    * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+    
+    body {
+      margin: 0; padding: 0; padding-bottom: calc(var(--nav-height) + 20px);
+      font-family: UTM Avo;
+      background-color: var(--bg-deep);
+      color: var(--text-main);
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* ===== 2. ANIMATED MESH BACKGROUND ===== */
+    .aurora {
+      position: fixed; z-index: -1; inset: 0;
+      background: 
+        radial-gradient(circle at 10% 20%, rgba(59, 130, 246, 0.15) 0%, transparent 40%),
+        radial-gradient(circle at 90% 80%, rgba(6, 182, 212, 0.15) 0%, transparent 40%);
+      animation: meshMove 20s infinite alternate;
+    }
+    @keyframes meshMove {
+      0% { transform: scale(1) rotate(0deg); }
+      100% { transform: scale(1.1) rotate(3deg); }
+    }
+
+    /* ===== 3. TOP HEADER ===== */
+    .topbar {
+      position: sticky; top: 0; z-index: 100;
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 16px 20px;
+      background: rgba(3, 5, 8, 0.8);
+      backdrop-filter: blur(20px);
+      border-bottom: 1px solid var(--border);
+    }
+    .brand { display: flex; align-items: center; gap: 12px; }
+    .logo {
+      width: 38px; height: 38px; border-radius: 10px;
+      background: linear-gradient(135deg, var(--primary), var(--accent));
+      display: flex; align-items: center; justify-content: center;
+      color: #fff; font-weight: 800; font-size: 14px;
+      box-shadow: 0 0 15px var(--primary-glow);
+    }
+    .title { font-weight: 700; font-size: 17px; letter-spacing: 0.5px; background: linear-gradient(90deg, #fff, #94a3b8); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+    
+    /* ===== 4. CONTAINER & GLASS CARDS ===== */
+    .container { padding: 16px; max-width: 800px; margin: 0 auto; }
+    
+    .glass {
+      background: var(--bg-panel);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 20px;
+      margin-bottom: 20px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+      position: relative;
+      overflow: hidden;
+    }
+    /* Glow effect on top */
+    .glass::before {
+      content: ''; position: absolute; top: 0; left: 0; right: 0; height: 1px;
+      background: linear-gradient(90deg, transparent, var(--accent), transparent);
+      opacity: 0.5;
+    }
+
+    h1 { font-size: 20px; margin: 0 0 16px; display: flex; align-items: center; gap: 10px; }
+    h2 { font-size: 18px; margin: 0 0 16px; color: var(--primary); display: flex; align-items: center; gap: 8px; }
+    h3 { font-size: 16px; margin: 16px 0 10px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; font-weight: 600; }
+
+    /* ===== 5. FORMS (FIXED INPUT FOCUS) ===== */
+    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+    @media (max-width: 600px) { .grid-2 { grid-template-columns: 1fr; } }
+
+    .field { display: flex; flex-direction: column; gap: 6px; margin-bottom: 12px; }
+    .field > span { font-size: 12px; color: var(--accent); font-weight: 600; text-transform: uppercase; }
+
+    input, select, textarea {
+      width: 100%; padding: 14px 16px;
+      background: var(--bg-input); 
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm); 
+      color: var(--text-main); outline: none;
+      font-size: 15px; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    
+    /* FIX: Input Focus State */
+    input:focus, select:focus, textarea:focus {
+      background: var(--bg-input-focus); /* Nền xám xanh rõ ràng */
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px var(--primary-glow);
+      color: #fff; /* Chữ trắng rõ ràng */
+    }
+    
+    textarea { min-height: 100px; resize: vertical; }
+    
+    /* Select Custom Icon */
+    .select-wrap { position: relative; }
+    .select-wrap select { appearance: none; padding-right: 40px; }
+    .select-wrap::after {
+      content: "\f107"; font-family: "Font Awesome 6 Free"; font-weight: 900;
+      position: absolute; right: 16px; top: 50%; transform: translateY(-50%);
+      color: var(--text-muted); pointer-events: none;
+    }
+
+    /* ===== 6. BUTTONS ===== */
+    .btn {
+      border: none; border-radius: 10px; padding: 12px 20px;
+      background: linear-gradient(135deg, var(--primary), #2563eb);
+      color: white; font-weight: 600; font-size: 14px;
+      display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+      cursor: pointer; box-shadow: 0 4px 15px var(--primary-glow);
+      transition: transform 0.1s, box-shadow 0.2s;
+    }
+    .btn:active { transform: scale(0.96); }
+    .btn.secondary { background: rgba(255,255,255,0.08); box-shadow: none; border: 1px solid var(--border); color: var(--text-muted); }
+    .btn.secondary:active { background: rgba(255,255,255,0.15); }
+    
+    .btn-icon {
+      width: 40px; height: 40px; border-radius: 12px;
+      background: rgba(255,255,255,0.05); border: 1px solid var(--border);
+      color: var(--text-muted); display: flex; align-items: center; justify-content: center;
+      cursor: pointer; transition: all 0.2s;
+    }
+    .btn-icon:hover { color: #fff; border-color: var(--primary); background: rgba(59, 130, 246, 0.1); }
+
+    .row-actions { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin-top: 16px; }
+
+    /* ===== 7. BOTTOM NAVIGATION (TAB) ===== */
+    .bottom-nav {
+      position: fixed; bottom: 0; left: 0; right: 0;
+      height: var(--nav-height);
+      background: #0f172a;
+      backdrop-filter: blur(20px);
+      border-top: 1px solid var(--border);
+      display: flex; justify-content: space-around; align-items: center;
+      z-index: 1000;
+      padding-bottom: env(safe-area-inset-bottom);
+    }
+
+    .nav-item {
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      flex: 1; height: 100%; color: var(--text-muted);
+      text-decoration: none; font-size: 11px; font-weight: 500;
+      cursor: pointer; transition: color 0.2s;
+      position: relative; z-index: 2;
+      background: #063cba ;
+    }
+    .nav-item i { font-size: 20px; margin-bottom: 4px; transition: transform 0.2s; }
+    
+    .nav-item.active { color: #c40000; text-shadow: 0 0 10px var(--primary-glow); background-color: #dfa504;}
+    .nav-item.active i { transform: translateY(-2px) scale(1.1); }
+
+    /* Sliding Active Indicator */
+    .nav-indicator {
+      position: absolute; bottom: 12px; 
+      height: 4px; width: 30px; 
+      background: var(--primary);
+      border-radius: 4px;
+      box-shadow: 0 0 10px var(--primary-glow);
+      transition: left 0.3s cubic-bezier(0.68, -0.55, 0.27, 1.55);
+      z-index: 1;
+    }
+
+    /* ===== 8. VERTICAL HOURS LIST (NEW) ===== */
+    .hours-list { display: flex; flex-direction: column; gap: 8px; }
+    
+    .hour-item {
+      display: flex; justify-content: space-between; align-items: center;
+      background: rgba(255,255,255,0.03);
+      border: 1px solid var(--border);
+      padding: 12px 16px;
+      border-radius: var(--radius-sm);
+      transition: all 0.2s;
+    }
+    .hour-item:hover { background: rgba(59, 130, 246, 0.05); border-color: var(--primary); }
+    
+    .hour-date { 
+        font-size: 14px; font-weight: 600; color: var(--text-muted); 
+        display: flex; flex-direction: column;
+    }
+    .hour-date small { font-size: 10px; color: #64748b; font-weight: 400; margin-top: 2px; }
+    
+    .hour-val {
+        font-size: 15px; font-weight: 700; font-family: UTM Avo;
+        color: var(--accent);
+        padding: 4px 12px;
+        background: rgba(6, 182, 212, 0.1);
+        border-radius: 20px;
+    }
+    .hour-val.off { color: #f43f5e; background: rgba(244, 63, 94, 0.1); }
+    .hour-val.ok { color: #10b981; background: rgba(16, 185, 129, 0.1); }
+
+    /* Summary Card */
+    .summary-card {
+      background: linear-gradient(135deg, rgba(59,130,246,0.2), rgba(6,182,212,0.2));
+      border: 1px solid var(--primary);
+      border-radius: var(--radius-sm);
+      padding: 16px;
+      margin-bottom: 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .summary-label { font-size: 14px; color: var(--text-muted); }
+    .summary-val { font-size: 24px; font-weight: 700; color: #fff; }
+
+    /* ===== 9. TABLE (Standard) ===== */
+    .table-wrap { overflow-x: auto; border: 1px solid var(--border); border-radius: var(--radius-sm); }
+    table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    th, td { padding: 10px 12px; text-align: left; border-bottom: 1px solid var(--border); }
+    thead th { background: rgba(0,0,0,0.2); color: var(--text-muted); font-weight: 600; }
+    tbody tr:last-child td { border-bottom: none; }
+
+    /* ===== 10. SCHEDULE GRID ===== */
+    .sched-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 12px; }
+    
+    .shift-card {
+      background: rgba(255,255,255,0.02); border: 1px solid var(--border);
+      border-radius: var(--radius-sm); padding: 12px;
+      transition: all 0.2s;
+    }
+    .shift-card:hover { border-color: var(--primary); }
+    
+    .shift-head { display: flex; justify-content: space-between; margin-bottom: 10px; font-size: 13px; }
+    .shift-date { color: var(--text-muted); font-size: 11px; }
+    
+    .shift-actions { display: flex; gap: 4px; justify-content: space-between; }
+    .ca-btn {
+      flex: 1; padding: 6px 0; border-radius: 6px; border: 1px solid var(--border);
+      background: transparent; color: var(--text-muted); font-size: 11px; cursor: pointer;
+      transition: all 0.2s; font-weight: 600;
+    }
+    .ca-btn:hover { border-color: var(--primary); color: #fff; }
+    .ca-btn.active {
+      background: var(--primary); border-color: var(--primary);
+      color: white; box-shadow: 0 2px 8px var(--primary-glow);
+    }
+
+    /* ===== UTILITIES ===== */
+    .hidden { display: none !important; }
+    .muted { color: var(--text-muted); }
+    .text-err { color: #f43f5e; font-size: 12px; margin-left: 8px; }
+    
+    /* Skeleton Loading */
+    .skeleton { background: linear-gradient(90deg, rgba(255,255,255,0.05) 25%, rgba(255,255,255,0.1) 50%, rgba(255,255,255,0.05) 75%); background-size: 200% 100%; animation: shimmer 1.5s infinite; color: transparent; min-height: 1em; }
+    @keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
+
+    /* Toast */
+    .toast-container { position: fixed; top: 20px; left: 20px; right: 20px; z-index: 2000; display: flex; flex-direction: column; gap: 8px; pointer-events: none; }
+    .toast {
+      background: #1e293b; border-radius: 8px; padding: 12px 16px;
+      box-shadow: 0 5px 15px rgba(0,0,0,0.3); display: flex; align-items: center; gap: 10px;
+      color: white; border-left: 4px solid var(--primary); animation: slideDown 0.3s forwards; pointer-events: all;
+    }
+    .toast.err { border-color: #f43f5e; }
+    .toast.ok { border-color: #10b981; }
+    @keyframes slideDown { from { opacity: 0; transform: translateY(-20px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* ===== NÚT KHIẾU NẠI TRONG GIỜ CÔNG ===== */
+    .hour-item {
+      position: relative; /* Để làm mốc cho nút */
+      display: flex; justify-content: space-between; align-items: center;
+      background: rgba(255,255,255,0.03);
+      border: 1px solid var(--border);
+      padding: 12px 40px 12px 16px; /* Chừa chỗ bên phải cho nút */
+      border-radius: var(--radius-sm);
+      transition: all 0.2s;
+    }
+    
+    /* Nút cờ đỏ nhỏ bên phải */
+    .btn-complain {
+      position: absolute; right: 10px; top: 50%; transform: translateY(-50%);
+      background: transparent; border: none; color: #fff;
+      width: 30px; height: 30px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer; transition: all 0.2s;
+    }
+    .btn-complain:hover { 
+        color: #f43f5e; background: rgba(244, 63, 94, 0.1); 
+    }
+
+    /* ===== MODAL POPUP ===== */
+    .modal-overlay {
+      position: fixed; inset: 0; z-index: 2000;
+      background: rgba(0,0,0,0.7);
+      backdrop-filter: blur(4px);
+      display: flex; align-items: center; justify-content: center;
+      opacity: 0; pointer-events: none; transition: opacity 0.3s;
+    }
+    .modal-overlay.show { opacity: 1; pointer-events: auto; }
+    
+    .modal-box {
+      background: var(--bg-panel); border: 1px solid var(--border);
+      width: 90%; max-width: 420px;
+      border-radius: var(--radius-lg); padding: 24px;
+      transform: scale(0.9); transition: transform 0.3s;
+      box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+    }
+    .modal-overlay.show .modal-box { transform: scale(1); }
+  </style>
+</head>
+<body>
+
+  <div class="aurora"></div>
 
   <header class="topbar">
     <div class="brand">
       <div class="logo">SB</div>
-      <div class="title">SUNDAY GIỜ CÔNG</div>
+      <div class="title">SUNDAY BASIC</div>
     </div>
     <div class="actions-top">
-      <button id="btnLogout" class="ghost" type="button" title="Đăng xuất">
+      <button id="btnLogout" class="btn-icon ghost" type="button" title="Đăng xuất">
         <i class="fa-solid fa-right-from-bracket"></i>
       </button>
     </div>
@@ -32,9 +353,8 @@
 
   <main class="container">
     <!-- LOGIN -->
-    <section class="glass card" id="cardLogin">
-      <h1><i class="fas fa-right-to-bracket"></i> Đăng nhập</h1>
-
+    <section class="glass" id="cardLogin">
+      <h1><i class="fas fa-fingerprint"></i> Xác thực</h1>
       <div class="grid-2">
         <label class="field">
           <span>Email</span>
@@ -45,177 +365,575 @@
           <input id="password" type="password" placeholder="••••••••" autocomplete="new-password">
         </label>
       </div>
-
       <div class="row-actions">
         <button id="btnLogin" class="btn" type="button">
-          <i class="fa-solid fa-unlock"></i> Đăng nhập
+          <i class="fa-solid fa-arrow-right-to-bracket"></i> Đăng nhập
         </button>
         <span id="loginMsg" class="text-err"></span>
       </div>
-
-      <p class="muted">Hệ thống quản lý giờ công Sunday Basic Biên Hoà</p>
     </section>
 
     <!-- APP -->
-    <section class="glass card hidden" id="cardApp">
-      <div class="subhead">
-        <div class="who" id="whoami">
-          <i class="fa-regular fa-circle-user"></i>
-        </div>
+    <section class="hidden" id="cardApp">
+      <div style="margin-bottom:20px;">
+        <span style="font-size:13px; color:var(--text-muted);">Xin chào,</span>
+        <div id="whoami" style="font-weight:700; font-size:18px;"></div>
       </div>
 
-      <div class="tabbar">
-        <div class="tabs">
-          <button class="tab active" data-tab="requestTab" type="button">Phiếu yêu cầu</button>
-          <button class="tab" data-tab="scheduleTab" type="button">Đăng ký lịch</button>
-          <button class="tab" data-tab="hoursTab" type="button">Giờ công của tôi</button>
-        </div>
-      </div>
-
-      <!-- Phiếu yêu cầu -->
+      <!-- TAB 1: PHIEU YEU CAU -->
       <div id="requestTab">
-        <h2><i class="fa-regular fa-rectangle-list"></i> Tạo phiếu</h2>
-
+        <h2><i class="fa-solid fa-paper-plane"></i> Tạo yêu cầu mới</h2>
         <div class="grid-2">
           <label class="field">
-            <span>Vấn đề</span>
+            <span>Loại vấn đề</span>
             <div class="select-wrap">
               <select id="issueType">
-                <option value="">-- Chọn vấn đề --</option>
+                <option value="">-- Chọn --</option>
                 <option value="Khiếu nại giờ công">Khiếu nại giờ công</option>
                 <option value="pass ca">Pass ca</option>
               </select>
             </div>
           </label>
-
           <label class="field">
-            <span>Ngày khiếu nại / pass ca</span>
-            <input id="requestDate" type="text" placeholder="dd-mm-yyyy">
+            <span>Ngày phát sinh</span>
+            <input id="requestDate" type="text" placeholder="Chọn ngày">
           </label>
-
-          <!-- Flatpickr CSS + JS -->
-          <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
-          <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
-          <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/vn.js"></script>
-          <script>
-            flatpickr("#requestDate", {
-              dateFormat: "d-m-Y",
-              allowInput: true,
-              locale: "vn"
-            });
-          </script>
         </div>
 
         <label class="field hidden" id="passCaRow">
-          <span>Chọn nhân viên cần pass ca</span>
-          <div class="select-wrap">
-            <select id="passEmployee"></select>
-          </div>
+          <span>Nhân viên nhận pass</span>
+          <div class="select-wrap"><select id="passEmployee"></select></div>
         </label>
 
-        <!-- ▼ THÊM: chọn Ca khi pass ca -->
         <label class="field hidden" id="passShiftRow">
-          <span>Chọn ca cần pass</span>
+          <span>Ca làm việc</span>
           <div class="select-wrap">
             <select id="passShift">
-              <option value="">-- Chọn ca --</option>
+              <option value="">-- Ca --</option>
               <option value="ca1">Ca 1</option>
               <option value="ca2">Ca 2</option>
               <option value="ca3">Ca 3</option>
             </select>
           </div>
         </label>
-        <!-- ▲ HẾT PHẦN THÊM -->
 
         <label class="field">
-          <span>Nội dung trình bày</span>
-          <textarea id="content" placeholder="Mô tả chi tiết..."></textarea>
+          <span>Nội dung chi tiết</span>
+          <textarea id="content" placeholder="Mô tả rõ ràng vấn đề..."></textarea>
         </label>
 
-        <div class="row-actions">
-          <button id="btnSend" class="btn" type="button">
-            <i class="fa-solid fa-paper-plane"></i> Gửi
-          </button>
-          <span id="requestMsg"></span>
+        <div class="row-actions" style="justify-content: space-between;">
+            <button id="btnSend" class="btn"><i class="fa-solid fa-paper-plane"></i> Gửi đi</button>
+            <button id="btnRefreshReq" class="btn secondary"><i class="fa-solid fa-rotate"></i></button>
         </div>
 
-        <div class="list-header">
-          <h3 class="subtle">Danh sách yêu cầu</h3>
-          <button id="btnRefreshReq" class="btn secondary" type="button">
-            <i class="fa-solid fa-rotate"></i> Tải lại
-          </button>
-        </div>
-
+        <h3>Lịch sử yêu cầu</h3>
         <div class="table-wrap">
           <table id="reqTable">
-            <thead>
-              <tr>
-                <th>Ngày tạo</th>
-                <th>Tên nhân viên</th>
-                <th>Vấn đề</th>
-                <th>Ngày khiếu nại</th>
-                <th>Nhân viên pass</th>
-                <th>Nội dung</th>
-              </tr>
-            </thead>
+            <thead><tr><th>Ngày</th><th>Loại</th><th>Trạng thái/Nội dung</th></tr></thead>
             <tbody id="reqBody"></tbody>
           </table>
         </div>
-
-        <hr class="softline">
       </div>
 
-      <!-- Giờ công -->
+      <!-- TAB 2: GIO CONG (Vertical List) -->
       <div id="hoursTab" class="hidden">
-        <h2 id="hoursTitle"><i class="fa-regular fa-clock"></i> Giờ Công</h2>
-        <div id="hoursBox" class="skeleton">Đang tải…</div>
+        <h2><i class="fa-regular fa-clock"></i> Chấm công</h2>
+        
+        <div class="summary-card">
+            <div class="summary-label">Tổng giờ tháng này</div>
+            <div class="summary-val" id="totalHoursMonth">0h</div>
+        </div>
 
-        <div class="table-wrap">
-          <table id="hoursTable" class="hidden">
-            <thead id="hoursHead"></thead>
-            <tbody>
-              <tr id="hoursRow"></tr>
-            </tbody>
-          </table>
+        <h3>Chi tiết ngày công</h3>
+        <div id="hoursBox" class="hours-list">
+            <!-- JS will render hour-item here -->
+            <div class="skeleton" style="height:50px; margin-bottom:8px;"></div>
+            <div class="skeleton" style="height:50px; margin-bottom:8px;"></div>
+            <div class="skeleton" style="height:50px;"></div>
         </div>
       </div>
 
-      <!-- Đăng ký lịch -->
+      <!-- TAB 3: DANG KY LICH -->
       <div id="scheduleTab" class="hidden">
-        <div class="list-header">
-          <h3 class="subtle">
-            <i class="fa-regular fa-calendar-check"></i> Đăng ký lịch
-          </h3>
-          <div class="row-actions">
-            <button id="btnSchedReload" class="btn secondary" type="button">
-              <i class="fa-solid fa-rotate"></i> Tải lại
-            </button>
-            <button id="btnSchedClear" class="btn ghost" type="button">
-              <i class="fa-regular fa-circle-xmark"></i> Bỏ chọn
-            </button>
-            <button id="btnSchedSave" class="btn" type="button">
-              <i class="fa-solid fa-floppy-disk"></i> Lưu đăng ký
-            </button>
-          </div>
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
+            <h2 style="margin:0"><i class="fa-regular fa-calendar-check"></i> Đăng ký lịch</h2>
+            <button id="btnSchedSave" class="btn" type="button"><i class="fa-solid fa-check"></i> Lưu</button>
         </div>
-
-        <div id="schedGrid" class="sched-grid"><!-- cards --></div>
-
-        <div class="note-panel">
-          <label class="field">
-            <span>Ghi chú (tùy chọn)</span>
-            <textarea id="scheduleNote" rows="2" placeholder="Ví dụ: Ca 3 vào 18h nha Anh"></textarea>
-          </label>
+        
+        <div id="schedGrid" class="sched-grid"></div>
+        
+        <div class="field" style="margin-top:16px">
+          <span>Ghi chú thêm (nếu có)</span>
+          <textarea id="scheduleNote" rows="2" placeholder="Ví dụ: Đăng ký ca 2 bù thứ 7..."></textarea>
+        </div>
+        <div class="row-actions" style="justify-content: flex-start; gap:8px;">
+            <button id="btnSchedReload" class="btn secondary"><i class="fa-solid fa-rotate"></i> Tải lại</button>
+            <button id="btnSchedClear" class="btn secondary"><i class="fa-regular fa-circle-xmark"></i> Bỏ chọn</button>
         </div>
       </div>
     </section>
   </main>
 
-  <footer class="footer">© 2025 Sunday Basic Biên Hoà</footer>
+  <!-- BOTTOM NAV -->
+  <nav class="bottom-nav hidden" id="mainNav">
+    <div class="nav-indicator" id="navIndicator"></div>
+    <button class="nav-item active" data-tab="requestTab" type="button">
+      <i class="fa-solid fa-file-pen"></i>
+      <span>Phiếu</span>
+    </button>
+    <button class="nav-item" data-tab="scheduleTab" type="button">
+      <i class="fa-solid fa-calendar-days"></i>
+      <span>Lịch</span>
+    </button>
+    <button class="nav-item" data-tab="hoursTab" type="button">
+      <i class="fa-solid fa-clock-rotate-left"></i>
+      <span>Giờ công</span>
+    </button>
+  </nav>
 
   <div class="toast-container" id="toastContainer"></div>
 
-  <!-- App script -->
-  <script src="app.js" defer></script>
+  <!-- MODAL KHIẾU NẠI GIỜ CÔNG -->
+<div id="complaintModal" class="modal-overlay" onclick="if(event.target === this) closeComplaintModal()">
+  <div class="modal-box">
+    <h2 style="margin-top:0; color:var(--error)">
+      <i class="fa-solid fa-triangle-exclamation"></i> Khiếu nại giờ công
+    </h2>
+    
+    <p style="font-size:13px; color:var(--text-muted)">
+      Bạn đang khiếu nại cho ngày: <strong id="modalDateDisplay" style="color:var(--accent)"></strong>
+    </p>
+
+    <label class="field" style="margin-top:10px">
+      <span>Nội dung sai sót</span>
+      <textarea id="modalContent" rows="3" placeholder="Ví dụ: Thừa giờ, Thiếu giờ..." style="background:var(--bg-input-focus)"></textarea>
+    </label>
+    
+    <div class="row-actions" style="justify-content: flex-end; margin-top:20px">
+      <button class="btn secondary" onclick="closeComplaintModal()">Huỷ bỏ</button>
+      <button id="btnModalSend" class="btn" onclick="submitComplaint()">
+        <i class="fa-solid fa-paper-plane"></i> Gửi khiếu nại
+      </button>
+    </div>
+  </div>
+</div>
+
+
+  
+  <script>
+    // ===== CONFIG =====
+    const API_URL = "https://proxy.mantrandinhminh.workers.dev/api";
+
+    // ===== HELPERS =====
+    const $ = s => document.querySelector(s);
+    const $$ = s => Array.from(document.querySelectorAll(s));
+    const escapeHtml = s => String(s||'').replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[m]);
+
+    function toast(msg, type) {
+      var box = $('#toastContainer');
+      if (!box) { alert(msg); return; }
+      while (box.children.length >= 3) box.removeChild(box.firstChild);
+      var el = document.createElement('div');
+      el.className = 'toast ' + (type === 'error' ? 'err' : 'ok');
+      el.innerHTML = '<i class="fa-'+(type==='error'?'solid fa-circle-exclamation':'regular fa-circle-check')+'"></i><span>'+ escapeHtml(msg) +'</span>';
+      box.appendChild(el);
+      setTimeout(() => { if(el.parentNode) { el.style.opacity = '0'; el.style.transform = 'translateY(-10px)'; setTimeout(() => el.remove(), 300); } }, 3000);
+    }
+
+    // ===== STATE =====
+    var state = { token:null, email:null, empName:null, employees:[], hoursTotals:{}, credentials:null, tokenExpiry:null };
+
+    // ===== API CORE =====
+    function isTokenValid() { return state.token && state.tokenExpiry && new Date().getTime() < (state.tokenExpiry - 300000); }
+    
+    function makeApiCall(path, data) {
+      return fetch(API_URL + '?path=' + encodeURIComponent(path), {
+        method: 'POST', headers: { 'Content-Type':'application/json' }, body: JSON.stringify(data)
+      }).then(res => {
+        if (!res.ok) { if (res.status === 401) handleTokenExpired(); throw new Error('HTTP ' + res.status); }
+        return res.json();
+      });
+    }
+
+    function refreshToken() {
+      if (!state.credentials) return Promise.reject(new Error('No credentials'));
+      return makeApiCall('login', state.credentials).then(r => {
+        if (!r || !r.ok) throw new Error('Refresh failed');
+        state.token = r.token; state.tokenExpiry = new Date().getTime() + 3600000;
+        localStorage.setItem('sunday.token', state.token);
+        localStorage.setItem('sunday.tokenExpiry', state.tokenExpiry);
+        return r;
+      });
+    }
+
+    function handleTokenExpired() {
+      localStorage.removeItem('sunday.token');
+      state.token = null;
+      $('#cardApp')?.classList.add('hidden');
+      $('#mainNav')?.classList.add('hidden');
+      $('#cardLogin')?.classList.remove('hidden');
+      toast('Phiên đăng nhập hết hạn', 'error');
+    }
+
+    function api(path, data) {
+      data = data || {};
+      if (state.token) data.token = state.token;
+      if (!isTokenValid() && state.credentials) {
+        return refreshToken().then(() => { data.token = state.token; return makeApiCall(path, data); })
+          .catch(err => { handleTokenExpired(); return Promise.reject(err); });
+      }
+      return makeApiCall(path, data);
+    }
+
+    // ===== TAB NAVIGATION (Sliding Indicator) =====
+    const navItems = $$('.nav-item');
+    const navIndicator = $('#navIndicator');
+
+    function setIndicator(btn) {
+        if(!btn || !navIndicator) return;
+        const rect = btn.getBoundingClientRect();
+        const parentRect = btn.parentElement.getBoundingClientRect();
+        navIndicator.style.left = (rect.left - parentRect.left + (rect.width/2) - 15) + 'px';
+    }
+
+    navItems.forEach(btn => {
+      btn.addEventListener('click', function() {
+        // Update Active Class
+        navItems.forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        setIndicator(btn);
+
+        // Switch Content
+        const targetId = btn.getAttribute('data-tab');
+        ['requestTab', 'hoursTab', 'scheduleTab'].forEach(id => {
+          const el = $('#'+id);
+          if(el) el.classList.toggle('hidden', id !== targetId);
+        });
+
+        // Trigger Data Load
+        if (targetId === 'scheduleTab') loadSchedule();
+        if (targetId === 'hoursTab') loadHours();
+      });
+    });
+
+    // ===== LOGIN LOGIC =====
+    $('#btnLogin')?.addEventListener('click', function(e) {
+      var btn = e.target.closest('button'); if(!btn) return;
+      var email = $('#email').value.trim();
+      var password = $('#password').value.trim();
+      if(!email || !password) { toast('Nhập đủ thông tin', 'error'); return; }
+
+      btn.disabled = true; btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>';
+      api('login', { email, password })
+        .then(r => {
+          if (!r || !r.ok) throw new Error(r?.message || 'Thất bại');
+          
+          state.token = r.token; state.email = r.email; state.empName = r.empName;
+          state.credentials = { email, password };
+          state.tokenExpiry = new Date().getTime() + 3600000;
+          
+          localStorage.setItem('sunday.token', state.token);
+          localStorage.setItem('sunday.email', state.email);
+          localStorage.setItem('sunday.empName', state.empName);
+          localStorage.setItem('sunday.credentials', JSON.stringify(state.credentials));
+          localStorage.setItem('sunday.tokenExpiry', state.tokenExpiry);
+
+          $('#whoami').textContent = state.empName;
+          $('#cardLogin').classList.add('hidden');
+          $('#cardApp').classList.remove('hidden');
+          $('#mainNav').classList.remove('hidden');
+          
+          // Set initial indicator position
+          setIndicator($('.nav-item.active'));
+          
+          loadRequestList();
+          loadEmployees(); 
+          toast('Đăng nhập thành công', 'ok');
+        })
+        .catch(err => { toast(err.message, 'error'); })
+        .finally(() => { btn.disabled = false; btn.innerHTML = '<i class="fa-solid fa-arrow-right-to-bracket"></i> Đăng nhập'; });
+    });
+
+    // Auto-login
+    function restoreSession() {
+      var t = localStorage.getItem('sunday.token');
+      var emp = localStorage.getItem('sunday.empName');
+      if (t && emp) {
+        state.token = t; state.empName = emp; state.email = localStorage.getItem('sunday.email');
+        state.credentials = JSON.parse(localStorage.getItem('sunday.credentials')||'null');
+        state.tokenExpiry = parseInt(localStorage.getItem('sunday.tokenExpiry')||'0');
+        
+        if (!isTokenValid() && state.credentials) refreshToken().catch(()=> {}); 
+        
+        $('#whoami').textContent = state.empName;
+        $('#cardLogin').classList.add('hidden');
+        $('#cardApp').classList.remove('hidden');
+        $('#mainNav').classList.remove('hidden');
+        
+        // Delay to allow layout render
+        setTimeout(() => setIndicator($('.nav-item.active')), 50);
+        
+        loadRequestList();
+        loadEmployees();
+      }
+    }
+
+    function loadEmployees() {
+       api('employees', {}).then(res => {
+         var arr = Array.isArray(res) ? res : (res?.rows || res?.data || []);
+         state.employees = arr.filter(Boolean).map(String);
+         var sel = $('#passEmployee');
+         if (sel) sel.innerHTML = '<option value="">-- Chọn NV --</option>' + state.employees.map(n => '<option>'+escapeHtml(n)+'</option>').join('');
+       });
+    }
+
+    // ===== REQUEST LOGIC =====
+    var issueSel = $('#issueType');
+    issueSel?.addEventListener('change', function() {
+      var isPass = (issueSel.value === 'pass ca');
+      $('#passCaRow').classList.toggle('hidden', !isPass);
+      $('#passShiftRow').classList.toggle('hidden', !isPass);
+    });
+
+    $('#btnSend')?.addEventListener('click', function() {
+      var issue = $('#issueType').value;
+      var date = $('#requestDate').value;
+      var content = $('#content').value.trim();
+      var passEmp = $('#passEmployee').value;
+      var passShift = $('#passShift').value;
+
+      if (!issue || !date || !content) { toast('Điền đủ thông tin', 'error'); return; }
+      if (issue === 'pass ca' && (!passEmp || !passShift)) { toast('Chọn NV và Ca pass', 'error'); return; }
+
+      var btn = $('#btnSend'); btn.disabled = true; btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>';
+      
+      api('submit', { payload: { issueType: issue, requestDate: date, passEmployee: passEmp, passShift: passShift, content: content }})
+      .then(r => {
+        if(!r.ok) throw new Error(r.message);
+        toast('Đã gửi phiếu', 'ok');
+        $('#content').value = '';
+        loadRequestList();
+      })
+      .catch(e => toast(e.message, 'error'))
+      .finally(() => { btn.disabled = false; btn.innerHTML = '<i class="fa-solid fa-paper-plane"></i> Gửi đi'; });
+    });
+
+    function loadRequestList() {
+      var body = $('#reqBody'); body.innerHTML = '<tr><td colspan="3" class="muted">Đang tải...</td></tr>';
+      api('listRequests', { limit: 20 }).then(r => {
+        if (!r.ok) throw new Error('');
+        var rows = r.rows || [];
+        if (!rows.length) { body.innerHTML = '<tr><td colspan="3" style="text-align:center">Trống</td></tr>'; return; }
+        body.innerHTML = rows.map(x => `<tr>
+          <td>${escapeHtml(x.reqDate || x.created)}</td>
+          <td><span style="color:${x.issue.includes('pass')?'var(--accent)':'var(--primary)'}">${escapeHtml(x.issue)}</span></td>
+          <td style="white-space:normal; font-size:12px">${escapeHtml(x.content)}</td>
+        </tr>`).join('');
+      }).catch(() => body.innerHTML = '<tr><td colspan="3">Lỗi tải</td></tr>');
+    }
+
+    $('#btnRefreshReq')?.addEventListener('click', loadRequestList);
+
+          // ===== HOURS LOGIC (VERTICAL LIST) =====
+    function loadHours() {
+      var box = $('#hoursBox'); 
+      box.innerHTML = '<div class="skeleton" style="height:50px; margin-bottom:8px;"></div><div class="skeleton" style="height:50px;"></div>';
+      $('#totalHoursMonth').textContent = '...';
+      
+      api('hours', {}).then(r => {
+        if (!r.ok) throw new Error('');
+        
+        var headers = r.header || [];
+        var rows = r.row || [];
+        
+        var topRow = Array.isArray(headers[0]) ? headers[0] : headers; 
+        var botRow = Array.isArray(headers[1]) ? headers[1] : [];      
+
+        var startIndex = 4; 
+        var html = '';
+        var len = Math.min(topRow.length, rows.length);
+
+                // Lấy tổng giờ (thường ở cột thứ 3 - index 3)
+        var totalRaw = String(rows[3] || '0');
+        // QUAN TRỌNG: Thay dấu phẩy (,) thành dấu chấm (.) để JS hiểu đúng số thập phân
+        var total = parseFloat(totalRaw.replace(',', '.')); 
+        
+        // Hiển thị ra web (dùng dấu phẩy lại cho đẹp chuẩn Việt Nam)
+        $('#totalHoursMonth').textContent = (isNaN(total) ? '0' : total.toFixed(1).replace('.', ',')) + 'h';
+
+        for (var i = startIndex; i < len; i++) {
+            var dayName = String(topRow[i] || '').trim(); 
+            var dateVal = String(botRow[i] || '').trim(); 
+            
+            if (!dayName && !dateVal) continue;
+
+            var displayDate = dayName;
+            if (dateVal) displayDate += ' (' + dateVal + ')';
+            
+            var val = String(rows[i] || '-').trim();
+            
+            var valClass = 'hour-val';
+            if (val === 'Off' || val === '0' || val === '') { valClass += ' off'; val = 'Nghỉ'; }
+            else if (!isNaN(parseFloat(val))) { valClass += ' ok'; val += 'h'; }
+            
+            // THÊM NÚT KHIẾU NẠI VÀO ĐÂY
+            html += `
+              <div class="hour-item">
+                <div class="hour-date">${escapeHtml(displayDate)}</div>
+                <div class="${valClass}">${escapeHtml(val)}</div>
+                <!-- Nút bấm mở modal -->
+                <button class="btn-complain" onclick="openComplaintModal('${escapeHtml(dateVal)}', '${escapeHtml(displayDate)}')" title="Khiếu nại ngày này">
+                   <i class="fa-solid fa-flag"></i>
+                </button>
+              </div>
+            `;
+        }
+        
+        if(!html) html = '<div class="muted" style="text-align:center; padding:20px">Không có dữ liệu</div>';
+        box.innerHTML = html;
+
+      }).catch(() => { box.innerHTML = '<div class="text-err" style="text-align:center">Lỗi tải</div>'; });
+    }
+
+        // ===== MODAL FUNCTIONS =====
+    function openComplaintModal(dateRaw, dateDisplay) {
+        // Điền thông tin vào modal
+        $('#modalDateDisplay').textContent = dateDisplay;
+        // Lưu ngày raw (dạng 01/04/2026) vào biến toàn cục tạm hoặc data attribute
+        $('#complaintModal').setAttribute('data-date', dateRaw);
+        
+        // Xóa nội dung cũ
+        $('#modalContent').value = '';
+        
+        // Hiện modal
+        $('#complaintModal').classList.add('show');
+    }
+
+    function closeComplaintModal() {
+        $('#complaintModal').classList.remove('show');
+    }
+
+    function submitComplaint() {
+        var btn = $('#btnModalSend');
+        var oldContent = btn.innerHTML;
+        var note = $('#modalContent').value.trim();
+        var dateRaw = $('#complaintModal').getAttribute('data-date');
+
+        if(!note) { toast('Vui lòng nhập nội dung khiếu nại', 'error'); return; }
+
+        // Bật trạng thái loading
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Đang gửi...';
+
+        // Gửi API (tương tự nút gửi phiếu nhưng cố định vấn đề)
+        api('submit', { 
+            payload: { 
+                issueType: "Khiếu nại giờ công", 
+                requestDate: dateRaw, 
+                content: note 
+            }
+        })
+        .then(r => {
+            if(!r.ok) throw new Error(r.message || 'Lỗi');
+            toast('Đã gửi khiếu nại thành công!', 'ok');
+            closeComplaintModal();
+            loadRequestList(); // Tải lại danh sách phiếu nếu cần
+        })
+        .catch(e => toast(e.message || 'Lỗi gửi khiếu nại', 'error'))
+        .finally(() => {
+            btn.disabled = false;
+            btn.innerHTML = oldContent;
+        });
+    }
+
+    // ===== SCHEDULE LOGIC =====
+    var schedMeta = null, schedState = [];
+    
+    function loadSchedule() {
+      var grid = $('#schedGrid');
+      grid.innerHTML = '<div class="skeleton" style="height:100px"></div>';
+      api('scheduleGet', {}).then(r => {
+        if (!r.ok) throw new Error('');
+        schedMeta = r.meta || { days: [] };
+        schedState = Array.isArray(r.selected) ? r.selected : [];
+        while(schedState.length < schedMeta.days.length * 3) schedState.push(false);
+        
+        grid.innerHTML = '';
+        schedMeta.days.forEach((d, i) => {
+          var card = document.createElement('div'); card.className = 'shift-card';
+          card.innerHTML = `
+            <div class="shift-head">
+              <div style="color:#fff">${escapeHtml(d.dayName)}</div>
+              <div class="shift-date">${escapeHtml(d.date)}</div>
+            </div>
+            <div class="shift-actions">
+              <button class="ca-btn ${schedState[i*3]?'active':''}" data-idx="${i*3}">Ca 1</button>
+              <button class="ca-btn ${schedState[i*3+1]?'active':''}" data-idx="${i*3+1}">Ca 2</button>
+              <button class="ca-btn ${schedState[i*3+2]?'active':''}" data-idx="${i*3+2}">Ca 3</button>
+            </div>
+          `;
+          grid.appendChild(card);
+        });
+        
+        grid.querySelectorAll('.ca-btn').forEach(b => {
+          b.addEventListener('click', function() {
+            var idx = parseInt(this.dataset.idx);
+            schedState[idx] = !schedState[idx];
+            this.classList.toggle('active');
+          });
+        });
+        
+        if(r.note) $('#scheduleNote').value = r.note;
+      }).catch(() => grid.innerHTML = '<div class="muted">Lỗi tải lịch</div>');
+    }
+
+        $('#btnSchedSave')?.addEventListener('click', function() {
+      var btn = this; 
+      
+      // 1. Lưu lại nội dung gốc của nút (phục hồi sau khi xong)
+      var oldContent = btn.innerHTML; 
+      
+      // 2. Hiển thị vòng xoay và đổi text
+      btn.disabled = true; 
+      btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Đang lưu...';
+      
+      var note = $('#scheduleNote').value;
+      api('scheduleSave', { selected: schedState, note: note })
+      .then(r => {
+        if(!r.ok) throw new Error('');
+        toast('Đã lưu lịch làm việc', 'ok');
+      })
+      .catch(() => toast('Lỗi lưu lịch', 'error'))
+      .finally(() => {
+        // 3. Khôi phục lại nút về trạng thái ban đầu
+        btn.disabled = false; 
+        btn.innerHTML = oldContent; 
+      });
+    });
+    
+    $('#btnSchedClear')?.addEventListener('click', function() {
+      schedState = schedState.map(() => false);
+      loadSchedule(); 
+    });
+
+    // ===== LOGOUT =====
+    $('#btnLogout')?.addEventListener('click', function() {
+      localStorage.clear();
+      location.reload();
+    });
+
+    // ===== INIT =====
+    restoreSession();
+    
+    // Flatpickr init
+    flatpickr("#requestDate", { dateFormat: "d-m-Y", allowInput: true, locale: "vn" });
+    
+    // Enter key login
+    ['#email', '#password'].forEach(sel => {
+      $(sel)?.addEventListener('keydown', e => { if(e.key === 'Enter') $('#btnLogin').click(); });
+    });
+
+  </script>
 </body>
 </html>
