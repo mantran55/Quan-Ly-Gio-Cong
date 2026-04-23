@@ -35,6 +35,9 @@ function toast(msg, type){
   }, 10000);
 }
 
+
+// Hack để kích hoạt :active trên iOS
+document.addEventListener('touchstart', function(){}, true);
 // Thêm animation slideOut cho toast
 const style = document.createElement('style');
 style.textContent = `@keyframes slideOut { to { opacity: 0; transform: translateX(100%) scale(0.9); } }`;
