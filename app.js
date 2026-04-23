@@ -35,9 +35,32 @@ function toast(msg, type){
   }, 10000);
 }
 
+    // ===== FIX HIỆU ỨNG CHẠM CHO IPHONE =====
+    // iOS Safari rất "khó tính" với :active, ta phải dùng JS để toggle class thủ công
+    
+    document.addEventListener('touchstart', function(e) {
+        // Tìm thẻ cha có class .hour-item gần nhất với vị trí chạm
+        var item = e.target.closest('.hour-item');
+        if (item) {
+            item.classList.add('touch-active');
+        }
+    }, {passive: true});
 
-// Hack để kích hoạt :active trên iOS
-document.addEventListener('touchstart', function(){}, true);
+    document.addEventListener('touchend', function(e) {
+        // Khi nhấc ngón tay ra thì xóa class
+        var item = e.target.closest('.hour-item');
+        if (item) {
+            item.classList.remove('touch-active');
+        }
+    }, {passive: true});
+    
+    document.addEventListener('touchmove', function(e) {
+        // Nếu người dùng đang chạm nhưng lại cuộn trang, thì cũng xóa class luôn (tránh bị sáng đơ)
+        var items = document.querySelectorAll('.hour-item.touch-active');
+        items.forEach(function(i) { 
+            i.classList.remove('touch-active'); 
+        });
+    }, {passive: true});
 // Thêm animation slideOut cho toast
 const style = document.createElement('style');
 style.textContent = `@keyframes slideOut { to { opacity: 0; transform: translateX(100%) scale(0.9); } }`;
