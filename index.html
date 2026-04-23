@@ -220,9 +220,17 @@
       padding: 12px 40px 12px 16px;
       border-radius: var(--radius-sm);
       transition: all 0.2s;
+       cursor: pointer; 
+      -webkit-tap-highlight-color: transparent;
     }
     .hour-item:hover { background: rgba(255, 255, 255, 0.1); border-color: var(--primary); }
     
+    .hour-item:hover, 
+    .hour-item:active {
+      background: rgba(255, 255, 255, 0.1); 
+      border-color: var(--primary);
+      transform: scale(0.98); /* Hiệu ứng hơi nhỏ lại khi chạm để thấy rõ hơn */
+    }
     .hour-date { 
         font-size: 14px; font-weight: 600; color: #fff; 
     }
