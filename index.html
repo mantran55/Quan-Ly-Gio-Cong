@@ -211,6 +211,7 @@
 
     /* ===== 8. HOURS LIST ===== */
         /* ===== 8. HOURS LIST ===== */
+        /* ===== 8. HOURS LIST ===== */
     .hours-list { display: flex; flex-direction: column; gap: 10px; }
     
     .hour-item {
@@ -220,22 +221,24 @@
       border: 1px solid transparent;
       padding: 12px 40px 12px 16px;
       border-radius: var(--radius-sm);
-      transition: all 0.15s ease; /* Giảm thời gian để mượt hơn */
+      transition: all 0.15s ease; 
       cursor: pointer; 
-      -webkit-tap-highlight-color: transparent; /* Tắt màu xám mặc định */
+      -webkit-tap-highlight-color: transparent;
     }
 
     /* Hiệu ứng khi Hover (Chuột PC) */
     .hour-item:hover {
-      background: rgba(56, 189, 248, 0.15); /* Xanh nhạt */
+      background: rgba(56, 189, 248, 0.15); 
       border-color: var(--primary);
     }
 
-    /* Hiệu ứng khi Active (Chạm tay trên Điện thoại) */
-    .hour-item:active {
-      background: rgba(56, 189, 248, 0.4) !important; /* Màu Cyan sáng đậm, rất rõ */
+    /* Hiệu ứng khi Active (Dùng cho cả PC và Điện thoại) */
+    /* Thêm class .touch-active vào đây */
+    .hour-item:active, 
+    .hour-item.touch-active {
+      background: rgba(56, 189, 248, 0.4) !important; /* Màu sáng rõ nhất */
       border-color: var(--primary);
-      transform: scale(0.98); /* Co nhẹ lại */
+      transform: scale(0.98); 
       opacity: 0.9;
     }
     .hour-date { 
