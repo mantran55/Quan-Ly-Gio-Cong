@@ -9,89 +9,112 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <link rel="icon" href="working.png">
   
-  <!-- Flatpickr CSS + JS -->
+  <!-- Flatpickr -->
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
   <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
   <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/vn.js"></script>
 
   <style>
-    /* ===== 1. THEME & VARIABLES (Cyberpunk Dark) ===== */
- 
-    /* ===== 1. THEME & VARIABLES (DEEP OCEAN - GLASS) ===== */
+    /* ===== 1. THEME: NEON OCEAN SUNSET ===== */
     :root {
-      --bg-deep: transparent; /* Trong suốt để thấy ảnh nền */
-      --bg-panel: rgba(83, 117, 196, 0.75); /* Nền card mờ đậm */
-      --bg-input: rgba(40, 56, 82, 0.674); /* Nền input tối */
-      --bg-input-focus: rgba(30, 41, 59, 0.9); /* Nền focus */
+      --bg-deep: #011627; /* Xanh đại đương sâu */
+      --bg-panel: rgba(1, 22, 39, 0.85);
+      --bg-input: rgba(42, 59, 77, 0.5);
       
-      --primary: #ffffff; /* Xanh Cyan sáng */
-      --primary-glow: rgba(56, 189, 248, 0.4);
-      --primary-light: rgba(56, 189, 248, 0.1);
+      --primary: #00d4ff; /* Xanh Neon sáng */
+      --primary-glow: rgba(0, 212, 255, 0.4);
       
-      --accent: #f2f20a; /* Hồng Pastel nổi bật */
-      --accent-glow: rgba(244, 114, 182, 0.3);
+      --accent: #ff6b00; /* Cam rực rỡ */
+      --accent-glow: rgba(255, 107, 0, 0.5);
       
-      --text-main: #ffffff; /* Chữ trắng nhẹ */
-      --text-muted: #ffffff; /* Chữ xám */
-      --border: rgba(255, 255, 255, 0.15); /* Viền sáng mờ */
+      --text-main: #e0e6ed;
+      --text-muted: #8bacc4;
+      --border: rgba(0, 212, 255, 0.2);
       
       --radius-lg: 24px;
-      --radius-sm: 14px;
+      --radius-sm: 16px;
       --nav-height: 70px;
     }
 
     * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
     
-        body {
+    body {
       margin: 0; padding: 0; padding-bottom: calc(var(--nav-height) + 20px);
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      background-color: var(--bg-deep);
       color: var(--text-main);
       min-height: 100vh;
       overflow-x: hidden;
-      
-      /* QUAN TRỌNG: Xóa hoàn toàn background-image ở body */
-      background-color: #0f172a; /* Chỉ để màu nền dự phòng */
+      /* Ảnh nền chìm */
+      background-image: url('nv.jpg');
+      background-size: cover;
+      background-position: center;
+      background-attachment: fixed;
     }
 
-    /* ===== 2. BACKGROUND FIX CHO IPHONE ===== */
-    /* Ta dùng chính thẻ aurora này làm lớp nền cố định */
+    /* ===== 2. ANIMATED OCEAN BACKGROUND ===== */
     .aurora {
-      position: fixed; 
-      top: 0; left: 0; right: 0; bottom: 0; /* Kéo dài full màn hình */
-      z-index: -1; /* Nằm dưới cùng */
-      pointer-events: none; /* Không chặn bấm nút */
-
-      /* --- CẤU HÌNH 2 LỚP --- */
-      /* 1. Lớp Gradient (Màu tối phủ trên cùng) */
-      /* 2. Lớp Ảnh (Nằm dưới cùng) */
-      background: 
-        linear-gradient(180deg, rgba(4, 40, 126, 0.733) 0%, rgba(31, 70, 162, 0.558) 50%, rgba(15, 23, 42, 0.607) 100%),
-        url('nv.jpg') center/cover no-repeat;
-      
-      /* Tắt animation nếu muốn ảnh tĩnh, hoặc giữ lại nếu muốn hiệu ứng động */
-      animation: none; 
+      position: fixed; z-index: -1; inset: 0;
+      background: radial-gradient(circle at 50% 0%, rgba(0, 212, 255, 0.15) 0%, transparent 60%),
+                  radial-gradient(circle at 80% 50%, rgba(255, 107, 0, 0.1) 0%, transparent 50%),
+                  linear-gradient(180deg, rgba(1, 22, 39, 0.7) 0%, rgba(1, 22, 39, 0.95) 100%);
+      pointer-events: none;
     }
 
-    /* ===== 3. TOP HEADER ===== */
+    /* Hiệu ứng bong bóng khí (unique) */
+    .bubble {
+      position: absolute;
+      bottom: -100px;
+      background: radial-gradient(circle at 30% 30%, rgba(255, 255, 255, 0.2), rgba(0, 212, 255, 0.05));
+      border-radius: 50%;
+      animation: rise linear infinite;
+      z-index: -1;
+      filter: blur(1px);
+    }
+    @keyframes rise {
+      0% { bottom: -100px; transform: translateX(0); opacity: 0.5; }
+      50% { opacity: 0.8; }
+      100% { bottom: 120vh; transform: translateX(100px); opacity: 0; }
+    }
+
+    /* ===== 3. TOUCH RIPPLE EFFECT ===== */
+    /* Class này sẽ được JS thêm vào khi chạm */
+    .ripple-container { position: relative; overflow: hidden; }
+    .ripple {
+      position: absolute; border-radius: 50%;
+      background: radial-gradient(circle, rgba(255,255,255,0.7) 0%, rgba(0, 212, 255, 0.3) 60%, transparent 100%);
+      transform: scale(0); animation: ripple-anim 0.6s ease-out forwards;
+      pointer-events: none;
+    }
+    @keyframes ripple-anim {
+      to { transform: scale(4); opacity: 0; }
+    }
+
+    /* ===== 4. TOP HEADER ===== */
     .topbar {
       position: sticky; top: 0; z-index: 100;
-      display: flex; justify-content: space-between; align-items: center;
       padding: 16px 20px;
-      background: rgba(15, 23, 42, 0.6); /* Header mờ */
+      background: rgba(1, 22, 39, 0.8);
       backdrop-filter: blur(20px);
       border-bottom: 1px solid var(--border);
+      display: flex; justify-content: space-between; align-items: center;
     }
     .brand { display: flex; align-items: center; gap: 12px; }
     .logo {
-      width: 38px; height: 38px; border-radius: 12px;
-      background: linear-gradient(135deg, var(--primary), #099cf6);
+      width: 40px; height: 40px; border-radius: 12px;
+      background: linear-gradient(135deg, var(--accent), #ff4500);
       display: flex; align-items: center; justify-content: center;
-      color: #fff; font-weight: 800; font-size: 14px;
-      box-shadow: 0 4px 15px var(--primary-glow);
+      color: #fff; font-weight: 800; font-size: 15px;
+      box-shadow: 0 0 20px var(--accent-glow);
+      animation: pulse-glow 3s infinite alternate;
     }
-    .title { font-weight: 700; font-size: 17px; color: #fff; letter-spacing: 0.5px; }
+    @keyframes pulse-glow {
+      0% { box-shadow: 0 0 10px var(--accent-glow); }
+      100% { box-shadow: 0 0 25px var(--accent-glow); }
+    }
+    .title { font-weight: 800; font-size: 18px; letter-spacing: 1px; background: linear-gradient(90deg, #fff, var(--primary)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
     
-    /* ===== 4. CONTAINER & GLASS CARDS ===== */
+    /* ===== 5. CARDS & CONTAINER ===== */
     .container { padding: 16px; max-width: 800px; margin: 0 auto; }
     
     .glass {
@@ -100,27 +123,27 @@
       border-radius: var(--radius-lg);
       padding: 20px;
       margin-bottom: 20px;
-      box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+      box-shadow: 0 10px 40px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.05);
       position: relative;
       overflow: hidden;
-      backdrop-filter: blur(12px); /* Hiệu ứng kính mờ */
+      backdrop-filter: blur(10px);
     }
-    /* Viền sáng trên đầu card */
+    /* Viền neon chạy dọc */
     .glass::before {
       content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px;
-      background: linear-gradient(90deg, var(--primary), var(--accent), transparent);
+      background: linear-gradient(90deg, transparent, var(--primary), var(--accent), transparent);
     }
 
     h1 { font-size: 20px; margin: 0 0 16px; display: flex; align-items: center; gap: 10px; color: #fff; }
-    h2 { font-size: 18px; margin: 0 0 16px; color: var(--primary); display: flex; align-items: center; gap: 8px; }
-    h3 { font-size: 14px; margin: 16px 0 10px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; font-weight: 600; }
+    h2 { font-size: 18px; margin: 0 0 16px; color: var(--primary); display: flex; align-items: center; gap: 8px; text-shadow: 0 0 10px var(--primary-glow); }
+    h3 { font-size: 14px; margin: 16px 0 10px; color: var(--accent); text-transform: uppercase; letter-spacing: 1px; font-weight: 700; }
 
-    /* ===== 5. FORMS ===== */
+    /* ===== 6. FORMS ===== */
     .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
     @media (max-width: 600px) { .grid-2 { grid-template-columns: 1fr; } }
 
     .field { display: flex; flex-direction: column; gap: 6px; margin-bottom: 12px; }
-    .field > span { font-size: 12px; color: var(--primary); font-weight: 600; text-transform: uppercase; }
+    .field > span { font-size: 12px; color: var(--primary); font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; }
 
     input, select, textarea {
       width: 100%; padding: 14px 16px;
@@ -132,9 +155,9 @@
     }
     
     input:focus, select:focus, textarea:focus {
-      background: var(--bg-input-focus);
+      background: rgba(0, 212, 255, 0.05);
       border-color: var(--primary);
-      box-shadow: 0 0 0 3px var(--primary-glow);
+      box-shadow: 0 0 0 2px var(--primary-glow);
     }
     
     textarea { min-height: 100px; resize: vertical; }
@@ -144,40 +167,41 @@
     .select-wrap::after {
       content: "\f107"; font-family: "Font Awesome 6 Free"; font-weight: 900;
       position: absolute; right: 16px; top: 50%; transform: translateY(-50%);
-      color: var(--text-muted); pointer-events: none;
+      color: var(--primary); pointer-events: none;
     }
 
-    /* ===== 6. BUTTONS ===== */
+    /* ===== 7. BUTTONS ===== */
     .btn {
-      border: none; border-radius: 10px; padding: 12px 20px;
-      background: linear-gradient(135deg, var(--primary), #0ea5e9);
-      color: #0f172a; font-weight: 700; font-size: 14px; /* Chữ đậm để nổi trên nền xanh */
+      border: none; border-radius: 12px; padding: 12px 24px;
+      background: linear-gradient(135deg, var(--accent), #ff4500);
+      color: white; font-weight: 700; font-size: 14px;
       display: inline-flex; align-items: center; justify-content: center; gap: 8px;
-      cursor: pointer; box-shadow: 0 4px 15px var(--primary-glow);
-      transition: transform 0.1s, box-shadow 0.2s;
+      cursor: pointer; box-shadow: 0 4px 15px var(--accent-glow);
+      transition: all 0.2s; position: relative; overflow: hidden;
+      text-shadow: 0 1px 2px rgba(0,0,0,0.3);
     }
-    .btn:active { transform: scale(0.96); }
-    .btn.secondary { background: rgba(255,255,255,0.1); box-shadow: none; border: 1px solid var(--border); color: #fff; }
-    .btn.secondary:active { background: rgba(255,255,255,0.2); }
+    .btn:active { transform: scale(0.96); box-shadow: 0 0 25px var(--accent-glow); }
+    .btn.secondary { background: rgba(255,255,255,0.05); box-shadow: none; border: 1px solid var(--border); color: var(--text-muted); }
+    .btn.secondary:active { background: var(--primary); color: #000; box-shadow: 0 0 15px var(--primary-glow); }
     
     .btn-icon {
-      width: 40px; height: 40px; border-radius: 12px;
+      width: 40px; height: 40px; border-radius: 50%;
       background: rgba(255,255,255,0.05); border: 1px solid var(--border);
-      color: #fff; display: flex; align-items: center; justify-content: center;
+      color: var(--primary); display: flex; align-items: center; justify-content: center;
       cursor: pointer; transition: all 0.2s;
     }
-    .btn-icon:hover { background: var(--primary-light); border-color: var(--primary); }
+    .btn-icon:hover { background: var(--primary); color: #000; box-shadow: 0 0 20px var(--primary-glow); }
 
     .row-actions { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin-top: 16px; }
 
-    /* ===== 7. BOTTOM NAVIGATION (FLOATING GLASS) ===== */
+    /* ===== 8. BOTTOM NAVIGATION ===== */
     .bottom-nav {
-      position: fixed; bottom: 10px; left: 10px; right: 10px; /* Để khoảng cách mép, tạo cảm giác nổi */
+      position: fixed; bottom: 10px; left: 10px; right: 10px;
       height: 60px;
-      background: rgba(15, 23, 42, 0.8);
+      background: rgba(1, 22, 39, 0.85);
       backdrop-filter: blur(20px);
       border: 1px solid var(--border);
-      border-radius: 30px; /* Bo tròn hoàn toàn */
+      border-radius: 30px;
       display: flex; justify-content: space-around; align-items: center;
       z-index: 1000;
       box-shadow: 0 10px 30px rgba(0,0,0,0.5);
@@ -185,18 +209,18 @@
 
     .nav-item {
       display: flex; flex-direction: column; align-items: center; justify-content: center;
-      flex: 1; height: 100%; color: #0b2b99;
+      flex: 1; height: 100%; color: var(--text-muted);
       text-decoration: none; font-size: 10px; font-weight: 600;
       cursor: pointer; transition: all 0.2s;
       position: relative; z-index: 2;
     }
     .nav-item i { font-size: 20px; margin-bottom: 2px; transition: all 0.2s; }
     
-    .nav-item.active { color: #ff0000; }
+    .nav-item.active { color: #fff; }
     .nav-item.active i { 
       transform: translateY(-2px) scale(1.1); 
-      color: #ff0000;
-      filter: drop-shadow(0 0 8px var(--primary-glow));
+      color: var(--accent);
+      filter: drop-shadow(0 0 10px var(--accent-glow));
     }
 
     .nav-indicator {
@@ -204,60 +228,49 @@
       height: 4px; width: 20px; 
       background: var(--accent);
       border-radius: 4px;
-      box-shadow: 0 0 10px var(--accent-glow);
+      box-shadow: 0 0 15px var(--accent-glow);
       transition: left 0.3s cubic-bezier(0.68, -0.55, 0.27, 1.55);
       z-index: 1;
     }
 
-    /* ===== 8. HOURS LIST ===== */
-        /* ===== 8. HOURS LIST ===== */
-        /* ===== 8. HOURS LIST ===== */
+    /* ===== 9. HOURS LIST ===== */
     .hours-list { display: flex; flex-direction: column; gap: 10px; }
     
     .hour-item {
       position: relative; 
       display: flex; justify-content: space-between; align-items: center;
-      background: rgba(2, 60, 96, 0.622);
+      background: rgba(42, 59, 77, 0.3);
       border: 1px solid transparent;
       padding: 12px 40px 12px 16px;
       border-radius: var(--radius-sm);
-      transition: all 0.15s ease; 
-      cursor: pointer; 
-      -webkit-tap-highlight-color: transparent;
+      transition: all 0.2s;
+      cursor: pointer;
     }
 
-    /* Hiệu ứng khi Hover (Chuột PC) */
-    .hour-item:hover {
-      background: rgba(56, 189, 248, 0.15); 
+    /* Hiệu ứng chạm cho list */
+    .hour-item.is-touched {
+      background: rgba(0, 212, 255, 0.15);
       border-color: var(--primary);
+      transform: scale(0.98);
+      box-shadow: 0 0 20px var(--primary-glow) inset;
     }
-
-    /* Hiệu ứng khi Active (Dùng cho cả PC và Điện thoại) */
-    /* Thêm class .touch-active vào đây */
-    .hour-item:active, 
-    .hour-item.touch-active {
-      background: rgba(56, 189, 248, 0.4) !important; /* Màu sáng rõ nhất */
-      border-color: var(--primary);
-      transform: scale(0.98); 
-      opacity: 0.9;
-    }
-    .hour-date { 
-        font-size: 14px; font-weight: 600; color: #fff; 
-    }
+    
+    .hour-date { font-size: 14px; font-weight: 600; color: #fff; }
     .hour-date small { font-size: 10px; color: var(--text-muted); font-weight: 400; margin-top: 2px; }
     
     .hour-val {
         font-size: 15px; font-weight: 700;
         color: var(--primary);
         padding: 4px 12px;
-        background: rgba(56, 189, 248, 0.1);
+        background: rgba(0, 212, 255, 0.1);
         border-radius: 20px;
+        border: 1px solid rgba(0, 212, 255, 0.3);
     }
-    .hour-val.off { color: #f43f5e; background: rgba(244, 63, 94, 0.15); }
-    .hour-val.ok { color: #00ffff; background: rgba(16, 185, 129, 0.15); }
+    .hour-val.off { color: #ff6b6b; background: rgba(255, 107, 107, 0.15); border-color: rgba(255, 107, 107, 0.3); }
+    .hour-val.ok { color: var(--accent); background: rgba(255, 107, 0, 0.15); border-color: rgba(255, 107, 0, 0.3); }
 
     .summary-card {
-      background: linear-gradient(135deg, rgba(56, 189, 248, 0.1), rgba(244, 114, 182, 0.1));
+      background: linear-gradient(90deg, rgba(0, 212, 255, 0.1), rgba(255, 107, 0, 0.1));
       border: 1px solid var(--border);
       border-radius: var(--radius-sm);
       padding: 16px;
@@ -267,25 +280,24 @@
       align-items: center;
     }
     .summary-label { font-size: 14px; color: var(--text-muted); }
-    .summary-val { font-size: 24px; font-weight: 700; color: #fff; }
+    .summary-val { font-size: 24px; font-weight: 700; color: #fff; text-shadow: 0 0 10px rgba(255,255,255,0.3); }
 
-    /* ===== 9. TABLE ===== */
+    /* ===== 10. TABLE & OTHERS ===== */
     .table-wrap { overflow-x: auto; border: 1px solid var(--border); border-radius: var(--radius-sm); background: rgba(0,0,0,0.2); }
     table { width: 100%; border-collapse: collapse; font-size: 13px; }
     th, td { padding: 10px 12px; text-align: left; border-bottom: 1px solid var(--border); }
-    thead th { background: rgba(0,0,0,0.2); color: var(--text-muted); font-weight: 600; }
+    thead th { background: rgba(0,0,0,0.2); color: var(--primary); font-weight: 600; }
     tbody tr:last-child td { border-bottom: none; }
-    tbody tr:hover { background: rgba(255,255,255,0.05); }
+    tbody tr:hover { background: rgba(0, 212, 255, 0.05); }
 
-    /* ===== 10. SCHEDULE GRID ===== */
     .sched-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 12px; }
     
     .shift-card {
-      background: rgba(3, 59, 87, 0.41); border: 1px solid var(--border);
+      background: rgba(42, 59, 77, 0.3); border: 1px solid var(--border);
       border-radius: var(--radius-sm); padding: 12px;
       transition: all 0.2s;
     }
-    .shift-card:hover { border-color: var(--primary); background: rgba(255,255,255,0.08); }
+    .shift-card.is-touched { border-color: var(--primary); background: rgba(0, 212, 255, 0.1); box-shadow: 0 0 15px var(--primary-glow); }
     
     .shift-head { display: flex; justify-content: space-between; margin-bottom: 10px; font-size: 13px; color: #fff; }
     .shift-date { color: var(--text-muted); font-size: 11px; }
@@ -298,28 +310,28 @@
     }
     .ca-btn:hover { border-color: var(--primary); color: var(--primary); }
     .ca-btn.active {
-      background: var(--primary); border-color: var(--primary);
-      color: #0f172a; font-weight: 700;
-      box-shadow: 0 0 10px var(--primary-glow);
+      background: var(--accent); border-color: var(--accent);
+      color: #000; font-weight: 700;
+      box-shadow: 0 0 10px var(--accent-glow);
     }
 
     /* ===== UTILITIES ===== */
     .hidden { display: none !important; }
     .muted { color: var(--text-muted); }
-    .text-err { color: #f43f5e; font-size: 12px; margin-left: 8px; }
+    .text-err { color: #ff6b6b; font-size: 12px; margin-left: 8px; }
     
     .skeleton { background: linear-gradient(90deg, rgba(255,255,255,0.05) 25%, rgba(255,255,255,0.1) 50%, rgba(255,255,255,0.05) 75%); background-size: 200% 100%; animation: shimmer 1.5s infinite; color: transparent; min-height: 1em; }
     @keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
 
     .toast-container { position: fixed; top: 20px; left: 20px; right: 20px; z-index: 2000; display: flex; flex-direction: column; gap: 8px; pointer-events: none; }
     .toast {
-      background: rgba(15, 23, 42, 0.9); border-radius: 8px; padding: 12px 16px;
-      box-shadow: 0 5px 15px rgba(0,0,0,0.3); display: flex; align-items: center; gap: 10px;
+      background: rgba(1, 22, 39, 0.95); border-radius: 8px; padding: 12px 16px;
+      box-shadow: 0 5px 15px rgba(0,0,0,0.3), 0 0 0 1px var(--border); display: flex; align-items: center; gap: 10px;
       color: #fff; border-left: 4px solid var(--primary); animation: slideDown 0.3s forwards; pointer-events: all;
       backdrop-filter: blur(10px);
     }
-    .toast.err { border-color: #f43f5e; }
-    .toast.ok { border-color: #10b981; }
+    .toast.err { border-color: #ff6b6b; }
+    .toast.ok { border-color: var(--accent); }
     @keyframes slideDown { from { opacity: 0; transform: translateY(-20px); } to { opacity: 1; transform: translateY(0); } }
 
     .btn-complain {
@@ -329,31 +341,32 @@
       display: flex; align-items: center; justify-content: center;
       cursor: pointer; transition: all 0.2s;
     }
-    .btn-complain:hover { color: var(--accent); background: rgba(244, 114, 182, 0.1); }
+    .btn-complain:active { color: var(--accent); background: rgba(255, 107, 0, 0.2); }
 
     .modal-overlay {
       position: fixed; inset: 0; z-index: 2000;
-      background: rgba(0,0,0,0.6);
-      backdrop-filter: blur(4px);
+      background: rgba(0,0,0,0.8);
+      backdrop-filter: blur(8px);
       display: flex; align-items: center; justify-content: center;
       opacity: 0; pointer-events: none; transition: opacity 0.3s;
     }
     .modal-overlay.show { opacity: 1; pointer-events: auto; }
     
     .modal-box {
-      background: var(--bg-panel); border: 1px solid var(--border);
+      background: var(--bg-panel); border: 1px solid var(--primary);
       width: 90%; max-width: 420px;
       border-radius: var(--radius-lg); padding: 24px;
       transform: scale(0.9); transition: transform 0.3s;
-      box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+      box-shadow: 0 0 30px var(--primary-glow);
     }
     .modal-overlay.show .modal-box { transform: scale(1); }
-
   </style>
 </head>
 <body>
 
   <div class="aurora"></div>
+  <!-- Bong bóng nền động -->
+  <div id="bubbles-container"></div>
 
   <header class="topbar">
     <div class="brand">
@@ -369,7 +382,7 @@
 
   <main class="container">
     <!-- LOGIN -->
-    <section class="glass" id="cardLogin">
+    <section class="glass ripple-container" id="cardLogin">
       <h1><i class="fas fa-fingerprint"></i> Xác thực</h1>
       <div class="grid-2">
         <label class="field">
@@ -398,75 +411,74 @@
 
       <!-- TAB 1: PHIEU YEU CAU -->
       <div id="requestTab">
-        <h2><i class="fa-solid fa-paper-plane"></i> Tạo yêu cầu mới</h2>
-        <div class="grid-2">
-          <label class="field">
-            <span>Loại vấn đề</span>
-            <div class="select-wrap">
-              <select id="issueType">
-                <option value="">-- Chọn --</option>
-                <option value="Khiếu nại giờ công">Khiếu nại giờ công</option>
-                <option value="pass ca">Pass ca</option>
-              </select>
+        <div class="glass ripple-container" style="margin-top:0">
+            <h2><i class="fa-solid fa-paper-plane"></i> Tạo yêu cầu mới</h2>
+            <div class="grid-2">
+            <label class="field">
+                <span>Loại vấn đề</span>
+                <div class="select-wrap">
+                <select id="issueType">
+                    <option value="">-- Chọn --</option>
+                    <option value="Khiếu nại giờ công">Khiếu nại giờ công</option>
+                    <option value="pass ca">Pass ca</option>
+                </select>
+                </div>
+            </label>
+            <label class="field">
+                <span>Ngày phát sinh</span>
+                <input id="requestDate" type="text" placeholder="Chọn ngày">
+            </label>
             </div>
-          </label>
-          <label class="field">
-            <span>Ngày phát sinh</span>
-            <input id="requestDate" type="text" placeholder="Chọn ngày">
-          </label>
-        </div>
 
-        <label class="field hidden" id="passCaRow">
-          <span>Nhân viên nhận pass</span>
-          <div class="select-wrap"><select id="passEmployee"></select></div>
-        </label>
+            <label class="field hidden" id="passCaRow">
+            <span>Nhân viên nhận pass</span>
+            <div class="select-wrap"><select id="passEmployee"></select></div>
+            </label>
 
-        <label class="field hidden" id="passShiftRow">
-          <span>Ca làm việc</span>
-          <div class="select-wrap">
-            <select id="passShift">
-              <option value="">-- Ca --</option>
-              <option value="ca1">Ca 1</option>
-              <option value="ca2">Ca 2</option>
-              <option value="ca3">Ca 3</option>
-            </select>
-          </div>
-        </label>
+            <label class="field hidden" id="passShiftRow">
+            <span>Ca làm việc</span>
+            <div class="select-wrap">
+                <select id="passShift">
+                <option value="">-- Ca --</option>
+                <option value="ca1">Ca 1</option>
+                <option value="ca2">Ca 2</option>
+                <option value="ca3">Ca 3</option>
+                </select>
+            </div>
+            </label>
 
-        <label class="field">
-          <span>Nội dung chi tiết</span>
-          <textarea id="content" placeholder="Mô tả rõ ràng vấn đề..."></textarea>
-        </label>
+            <label class="field">
+            <span>Nội dung chi tiết</span>
+            <textarea id="content" placeholder="Mô tả rõ ràng vấn đề..."></textarea>
+            </label>
 
-        <div class="row-actions" style="justify-content: space-between;">
-            <button id="btnSend" class="btn"><i class="fa-solid fa-paper-plane"></i> Gửi đi</button>
-            <button id="btnRefreshReq" class="btn secondary"><i class="fa-solid fa-rotate"></i></button>
+            <div class="row-actions" style="justify-content: space-between;">
+                <button id="btnSend" class="btn"><i class="fa-solid fa-paper-plane"></i> Gửi đi</button>
+                <button id="btnRefreshReq" class="btn secondary"><i class="fa-solid fa-rotate"></i></button>
+            </div>
         </div>
 
         <h3>Lịch sử yêu cầu</h3>
-        <div class="table-wrap">
+        <div class="table-wrap ripple-container">
           <table id="reqTable">
-            <thead><tr><th>Ngày</th><th>Loại</th><th>Trạng thái/Nội dung</th></tr></thead>
+            <thead><tr><th>Ngày</th><th>Loại</th><th>Nội dung</th></tr></thead>
             <tbody id="reqBody"></tbody>
           </table>
         </div>
       </div>
 
-      <!-- TAB 2: GIO CONG (Vertical List) -->
+      <!-- TAB 2: GIO CONG -->
       <div id="hoursTab" class="hidden">
         <h2><i class="fa-regular fa-clock"></i> Chấm công</h2>
         
-        <div class="summary-card">
+        <div class="summary-card ripple-container">
             <div class="summary-label">Tổng giờ tháng này</div>
             <div class="summary-val" id="totalHoursMonth">0h</div>
         </div>
 
         <h3>Chi tiết ngày công</h3>
         <div id="hoursBox" class="hours-list">
-            <!-- JS will render hour-item here -->
-            <div class="skeleton" style="height:50px; margin-bottom:8px;"></div>
-            <div class="skeleton" style="height:50px; margin-bottom:8px;"></div>
-            <div class="skeleton" style="height:50px;"></div>
+            <!-- JS render -->
         </div>
       </div>
 
@@ -480,29 +492,29 @@
         <div id="schedGrid" class="sched-grid"></div>
         
         <div class="field" style="margin-top:16px">
-          <span>Ghi chú thêm (nếu có)</span>
-          <textarea id="scheduleNote" rows="2" placeholder="Ví dụ: Đăng ký ca 2 bù thứ 7..."></textarea>
+          <span>Ghi chú thêm</span>
+          <textarea id="scheduleNote" rows="2" placeholder="Ghi chú..."></textarea>
         </div>
         <div class="row-actions" style="justify-content: flex-start; gap:8px;">
-            <button id="btnSchedReload" class="btn secondary"><i class="fa-solid fa-rotate"></i> Tải lại</button>
-            <button id="btnSchedClear" class="btn secondary"><i class="fa-regular fa-circle-xmark"></i> Bỏ chọn</button>
+            <button id="btnSchedReload" class="btn secondary"><i class="fa-solid fa-rotate"></i></button>
+            <button id="btnSchedClear" class="btn secondary"><i class="fa-regular fa-circle-xmark"></i></button>
         </div>
       </div>
     </section>
   </main>
 
   <!-- BOTTOM NAV -->
-  <nav class="bottom-nav hidden" id="mainNav">
+  <nav class="bottom-nav hidden ripple-container" id="mainNav">
     <div class="nav-indicator" id="navIndicator"></div>
-    <button class="nav-item active" data-tab="requestTab" type="button">
+    <button class="nav-item active ripple-container" data-tab="requestTab" type="button">
       <i class="fa-solid fa-file-pen"></i>
       <span>Phiếu</span>
     </button>
-    <button class="nav-item" data-tab="scheduleTab" type="button">
+    <button class="nav-item ripple-container" data-tab="scheduleTab" type="button">
       <i class="fa-solid fa-calendar-days"></i>
       <span>Lịch</span>
     </button>
-    <button class="nav-item" data-tab="hoursTab" type="button">
+    <button class="nav-item ripple-container" data-tab="hoursTab" type="button">
       <i class="fa-solid fa-clock-rotate-left"></i>
       <span>Giờ công</span>
     </button>
@@ -510,33 +522,28 @@
 
   <div class="toast-container" id="toastContainer"></div>
 
-  <!-- MODAL KHIẾU NẠI GIỜ CÔNG -->
-<div id="complaintModal" class="modal-overlay" onclick="if(event.target === this) closeComplaintModal()">
-  <div class="modal-box">
-    <h2 style="margin-top:0; color:var(--error)">
-      <i class="fa-solid fa-triangle-exclamation"></i> Khiếu nại giờ công
-    </h2>
-    
-    <p style="font-size:13px; color:var(--text-muted)">
-      Bạn đang khiếu nại cho ngày: <strong id="modalDateDisplay" style="color:var(--accent)"></strong>
-    </p>
-
-    <label class="field" style="margin-top:10px">
-      <span>Nội dung sai sót</span>
-      <textarea id="modalContent" rows="3" placeholder="Ví dụ: Thừa giờ, Thiếu giờ..." style="background:var(--bg-input-focus)"></textarea>
-    </label>
-    
-    <div class="row-actions" style="justify-content: flex-end; margin-top:20px">
-      <button class="btn secondary" onclick="closeComplaintModal()">Huỷ bỏ</button>
-      <button id="btnModalSend" class="btn" onclick="submitComplaint()">
-        <i class="fa-solid fa-paper-plane"></i> Gửi khiếu nại
-      </button>
+  <!-- MODAL -->
+  <div id="complaintModal" class="modal-overlay" onclick="if(event.target === this) closeComplaintModal()">
+    <div class="modal-box ripple-container">
+      <h2 style="margin-top:0; color:var(--accent)">
+        <i class="fa-solid fa-triangle-exclamation"></i> Khiếu nại
+      </h2>
+      <p style="font-size:13px; color:var(--text-muted)">
+        Ngày: <strong id="modalDateDisplay" style="color:var(--primary)"></strong>
+      </p>
+      <label class="field" style="margin-top:10px">
+        <span>Nội dung</span>
+        <textarea id="modalContent" rows="3" placeholder="Mô tả sai sót..." style="background:var(--bg-input-focus)"></textarea>
+      </label>
+      <div class="row-actions" style="justify-content: flex-end; margin-top:20px">
+        <button class="btn secondary" onclick="closeComplaintModal()">Huỷ</button>
+        <button id="btnModalSend" class="btn" onclick="submitComplaint()">
+          <i class="fa-solid fa-paper-plane"></i> Gửi
+        </button>
+      </div>
     </div>
   </div>
-</div>
 
-
-  
   <script>
     // ===== CONFIG =====
     const API_URL = "https://proxy.mantrandinhminh.workers.dev/api";
@@ -602,7 +609,7 @@
       return makeApiCall(path, data);
     }
 
-    // ===== TAB NAVIGATION (Sliding Indicator) =====
+    // ===== TAB NAVIGATION =====
     const navItems = $$('.nav-item');
     const navIndicator = $('#navIndicator');
 
@@ -615,19 +622,16 @@
 
     navItems.forEach(btn => {
       btn.addEventListener('click', function() {
-        // Update Active Class
         navItems.forEach(b => b.classList.remove('active'));
         btn.classList.add('active');
         setIndicator(btn);
 
-        // Switch Content
         const targetId = btn.getAttribute('data-tab');
         ['requestTab', 'hoursTab', 'scheduleTab'].forEach(id => {
           const el = $('#'+id);
           if(el) el.classList.toggle('hidden', id !== targetId);
         });
 
-        // Trigger Data Load
         if (targetId === 'scheduleTab') loadSchedule();
         if (targetId === 'hoursTab') loadHours();
       });
@@ -660,7 +664,6 @@
           $('#cardApp').classList.remove('hidden');
           $('#mainNav').classList.remove('hidden');
           
-          // Set initial indicator position
           setIndicator($('.nav-item.active'));
           
           loadRequestList();
@@ -687,7 +690,6 @@
         $('#cardApp').classList.remove('hidden');
         $('#mainNav').classList.remove('hidden');
         
-        // Delay to allow layout render
         setTimeout(() => setIndicator($('.nav-item.active')), 50);
         
         loadRequestList();
@@ -751,12 +753,10 @@
 
     $('#btnRefreshReq')?.addEventListener('click', loadRequestList);
 
-          // ===== HOURS LOGIC (VERTICAL LIST) =====
-        // ===== HOURS LOGIC (VERTICAL LIST) =====
-        // ===== HOURS LOGIC (VERTICAL LIST) =====
+    // ===== HOURS LOGIC =====
     function loadHours() {
       var box = $('#hoursBox'); 
-      box.innerHTML = '<div class="skeleton" style="height:50px; margin-bottom:8px;"></div><div class="skeleton" style="height:50px;"></div>';
+      box.innerHTML = '<div class="skeleton" style="height:50px; margin-bottom:8px;"></div>';
       $('#totalHoursMonth').textContent = '...';
       
       api('hours', {}).then(r => {
@@ -765,28 +765,23 @@
         var headers = r.header || [];
         var rows = r.row || [];
         
-        // --- SỬA LẠI LOGIC THEO YÊU CẦU MỚI ---
-        // Hàng 2 trên Sheet (Ngày) -> là headers[0] trong code
         var dateRow = Array.isArray(headers[0]) ? headers[0] : headers; 
-        // Hàng 3 trên Sheet (Thứ) -> là headers[1] trong code
         var dayRow  = Array.isArray(headers[1]) ? headers[1] : [];      
 
         var startIndex = 4; 
         var html = '';
         var len = Math.min(dateRow.length, rows.length);
 
-        // Xử lý Tổng giờ
         var totalRaw = String(rows[3] || '0');
         var total = parseFloat(totalRaw.replace(',', '.')); 
         $('#totalHoursMonth').textContent = (isNaN(total) ? '0' : total.toFixed(1).replace('.', ',')) + 'h';
 
         for (var i = startIndex; i < len; i++) {
-            var dateVal = String(dateRow[i] || '').trim(); // Lấy Ngày: 01/04/2026
-            var dayName = String(dayRow[i] || '').trim();  // Lấy Thứ: Thứ 4
+            var dateVal = String(dateRow[i] || '').trim();
+            var dayName = String(dayRow[i] || '').trim();
             
             if (!dayName && !dateVal) continue;
 
-            // 1. Hiển thị trên danh sách giờ công: Thứ 4 (01/04/2026)
             var displayDate = dayName;
             if (dateVal) displayDate += ' (' + dateVal + ')';
             
@@ -796,18 +791,14 @@
             if (val === 'Off' || val === '0' || val === '') { valClass += ' off'; val = 'Nghỉ'; }
             else if (!isNaN(parseFloat(val))) { valClass += ' ok'; val += 'h'; }
             
-            // 2. Chuẩn bị dữ liệu cho Modal
-            // modalDisplay: "01/04/2026 (Thứ 4)" -> Hiện trên popup
-            // dateToSend: "01/04/2026" -> Gửi lên server
             var modalDisplay = (dateVal ? dateVal + ' (' + dayName + ')' : dayName);
             
+            // Thêm class ripple-container để bắt sự kiện chạm
             html += `
-              <div class="hour-item">
+              <div class="hour-item ripple-container" onclick="openComplaintModal('${escapeHtml(dateVal)}', '${escapeHtml(modalDisplay)}')">
                 <div class="hour-date">${escapeHtml(displayDate)}</div>
                 <div class="${valClass}">${escapeHtml(val)}</div>
-                <button class="btn-complain" onclick="openComplaintModal('${escapeHtml(dateVal)}', '${escapeHtml(modalDisplay)}')" title="Khiếu nại ngày này">
-                   <i class="fa-solid fa-flag"></i>
-                </button>
+                <button class="btn-complain"><i class="fa-solid fa-flag"></i></button>
               </div>
             `;
         }
@@ -820,18 +811,13 @@
 
     // ===== MODAL FUNCTIONS =====
     function openComplaintModal(dateToSend, displayText) {
-        // Hiển thị trên Modal: "01/04/2026 (Thứ 4)"
         $('#modalDateDisplay').textContent = displayText;
-        
-        // Lưu ngày để gửi đi (data-date): "01/04/2026"
-        // Nếu dateToSend rỗng (lỗi dữ liệu), thử tách từ displayText
         if (!dateToSend && displayText) {
              var match = displayText.match(/(\d{1,2}\/\d{1,2}\/\d{4})/);
              if(match) dateToSend = match[0];
         }
 
         $('#complaintModal').setAttribute('data-date', dateToSend);
-        
         $('#modalContent').value = '';
         $('#complaintModal').classList.add('show');
     }
@@ -849,15 +835,13 @@
         if(!note) { toast('Vui lòng nhập nội dung khiếu nại', 'error'); return; }
         if(!dateRaw) { toast('Lỗi: Không tìm thấy ngày để gửi.', 'error'); return; }
 
-        // Bật trạng thái loading
         btn.disabled = true;
         btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Đang gửi...';
 
-        // Gửi API
         api('submit', { 
             payload: { 
                 issueType: "Khiếu nại giờ công", 
-                requestDate: dateRaw, // Gửi đúng ngày: 01/04/2026
+                requestDate: dateRaw,
                 content: note 
             }
         })
@@ -888,7 +872,7 @@
         
         grid.innerHTML = '';
         schedMeta.days.forEach((d, i) => {
-          var card = document.createElement('div'); card.className = 'shift-card';
+          var card = document.createElement('div'); card.className = 'shift-card ripple-container';
           card.innerHTML = `
             <div class="shift-head">
               <div style="color:#fff">${escapeHtml(d.dayName)}</div>
@@ -917,11 +901,7 @@
 
         $('#btnSchedSave')?.addEventListener('click', function() {
       var btn = this; 
-      
-      // 1. Lưu lại nội dung gốc của nút (phục hồi sau khi xong)
       var oldContent = btn.innerHTML; 
-      
-      // 2. Hiển thị vòng xoay và đổi text
       btn.disabled = true; 
       btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Đang lưu...';
       
@@ -933,7 +913,6 @@
       })
       .catch(() => toast('Lỗi lưu lịch', 'error'))
       .finally(() => {
-        // 3. Khôi phục lại nút về trạng thái ban đầu
         btn.disabled = false; 
         btn.innerHTML = oldContent; 
       });
@@ -960,6 +939,89 @@
     ['#email', '#password'].forEach(sel => {
       $(sel)?.addEventListener('keydown', e => { if(e.key === 'Enter') $('#btnLogin').click(); });
     });
+
+    // ==========================================
+    // ===== UNIQUE INTERACTIONS (BẮT BUỘC) =====
+    // ==========================================
+
+    // 1. Hiệu ứng Bong Bóng Khí (Bubbles)
+    function createBubbles() {
+        const container = document.getElementById('bubbles-container');
+        if(!container) return;
+        
+        // Tạo 15 bong bóng
+        for(let i=0; i<15; i++) {
+            const bubble = document.createElement('div');
+            bubble.className = 'bubble';
+            
+            // Random size
+            const size = Math.random() * 60 + 20; // 20px - 80px
+            bubble.style.width = `${size}px`;
+            bubble.style.height = `${size}px`;
+            
+            // Random position
+            bubble.style.left = `${Math.random() * 100}%`;
+            
+            // Random animation duration
+            const duration = Math.random() * 10 + 8; // 8s - 18s
+            bubble.style.animationDuration = `${duration}s`;
+            
+            // Random delay
+            bubble.style.animationDelay = `${Math.random() * 5}s`;
+            
+            container.appendChild(bubble);
+        }
+    }
+    createBubbles();
+
+    // 2. Hiệu ứng Chạm Sóng Nước (Ripple Effect)
+    // Áp dụng cho mọi phần tử có class .ripple-container
+    function applyRippleEffect() {
+        document.body.addEventListener('touchstart', function(e) {
+            // Tìm container gần nhất
+            const target = e.target.closest('.ripple-container');
+            if (!target) return;
+
+            // Tạo phần tử ripple
+            const ripple = document.createElement('span');
+            ripple.className = 'ripple';
+            
+            // Lấy vị trí chạm
+            const rect = target.getBoundingClientRect();
+            const x = e.touches[0].clientX - rect.left;
+            const y = e.touches[0].clientY - rect.top;
+            
+            // Định vị ripple
+            ripple.style.left = `${x}px`;
+            ripple.style.top = `${y}px`;
+            
+            // Thêm vào DOM
+            target.appendChild(ripple);
+
+            // Xóa sau khi animation xong
+            setTimeout(() => ripple.remove(), 600);
+        }, {passive: true});
+
+        // Xử lý cho Click (Desktop)
+        document.body.addEventListener('mousedown', function(e) {
+            const target = e.target.closest('.ripple-container');
+            if (!target) return;
+
+            const ripple = document.createElement('span');
+            ripple.className = 'ripple';
+            
+            const rect = target.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+            
+            ripple.style.left = `${x}px`;
+            ripple.style.top = `${y}px`;
+            
+            target.appendChild(ripple);
+            setTimeout(() => ripple.remove(), 600);
+        });
+    }
+    applyRippleEffect();
 
   </script>
 </body>
