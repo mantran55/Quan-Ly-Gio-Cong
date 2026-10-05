@@ -351,7 +351,102 @@
     }
     .modal-overlay.show .modal-box { transform: scale(1); }
   </style>
-  <link rel="stylesheet" href="mobile.css">
+  <style id="mobile-styles">
+/* Shared control defaults; mobile layout is scoped below. */
+.nav-item { appearance: none; border: 0; background: transparent; font-family: inherit; }
+.login-intro { color: var(--text-muted); font-size: 14px; line-height: 1.65; margin: -4px 0 24px; }
+button, input, select, textarea { font-family: inherit; }
+button:focus-visible, .hour-item:focus-visible { outline: 2px solid var(--primary); outline-offset: 3px; }
+body { isolation: isolate; }
+.bg-container { z-index: -1; }
+.bg-image { background-size: contain; background-position: center; }
+
+@media (max-width: 768px) {
+  :root {
+    --bg-panel: rgba(12, 35, 53, .78);
+    --bg-input: #142e43;
+    --border: rgba(159, 197, 224, .16);
+    --text-muted: #a6bccc;
+    --radius-lg: 22px;
+    --radius-sm: 14px;
+  }
+  body { min-height: 100svh; padding-bottom: calc(104px + env(safe-area-inset-bottom)); line-height: 1.5; }
+  .bg-image { opacity: 1; }
+  .bg-overlay { background: linear-gradient(180deg, rgba(1,22,39,.18), rgba(1,22,39,.48)); }
+  .topbar { padding: calc(12px + env(safe-area-inset-top)) 18px 12px; gap: 12px; background: rgba(1,22,39,.96); }
+  .brand { gap: 10px; min-width: 0; }
+  .logo { width: 38px; height: 38px; flex-shrink: 0; box-shadow: none; }
+  .title { font-size: clamp(14px, 4vw, 17px); letter-spacing: .7px; }
+  .btn-icon { width: 44px; height: 44px; border-radius: 14px; }
+  .container { padding: 24px 16px; width: 100%; }
+  .glass { padding: 22px 18px; margin-bottom: 24px; box-shadow: 0 8px 24px rgba(0,0,0,.16); }
+  .glass::before { height: 1px; opacity: .5; }
+  h1 { font-size: 23px; letter-spacing: -.5px; }
+  h2 { font-size: 20px; color: #eef7ff; text-shadow: none; letter-spacing: -.3px; }
+  h2 > i { color: var(--primary); font-size: 18px; }
+  h3 { font-size: 12px; color: var(--text-muted); margin: 24px 0 12px; }
+  .grid-2 { grid-template-columns: minmax(0, 1fr); gap: 4px; }
+  .field { min-width: 0; gap: 8px; margin-bottom: 16px; }
+  .field > span { color: #c7d7e3; font-size: 13px; text-transform: none; letter-spacing: 0; }
+  input, select, textarea { min-width: 0; min-height: 52px; font-size: 16px; padding: 14px; }
+  select option { background: #142e43; color: #fff; }
+  textarea { min-height: 120px; line-height: 1.6; }
+  .btn { min-height: 48px; padding: 12px 18px; box-shadow: 0 4px 12px rgba(255,107,0,.14); }
+  .btn.secondary { color: #c7d7e3; }
+  .row-actions { gap: 12px; margin-top: 8px; }
+  #btnLogin { width: 100%; }
+  #loginMsg { margin-left: 0; overflow-wrap: anywhere; }
+  #btnSend { flex: 1; }
+  #btnRefreshReq, #btnSchedReload, #btnSchedClear { min-width: 48px; }
+  #whoami { overflow-wrap: anywhere; }
+  .bottom-nav {
+    bottom: calc(12px + env(safe-area-inset-bottom)); left: 16px; right: 16px;
+    height: 72px; max-width: 480px; margin: 0 auto; padding: 6px;
+    border-radius: 24px; background: #0c2335; box-shadow: 0 8px 32px rgba(0,0,0,.35);
+  }
+  .nav-item { border-radius: 18px; gap: 4px; font-size: 11px; min-width: 0; }
+  .nav-item i { font-size: 20px; margin: 0; }
+  .nav-item.active { background: rgba(255,107,0,.12); color: #ffab70; }
+  .nav-item.active i { transform: none; filter: none; color: #ffab70; }
+  .nav-indicator { display: none; }
+  .summary-card { padding: 24px 20px; gap: 16px; background: linear-gradient(120deg, #123d51, #142c40); }
+  .summary-label { font-size: 12px; font-weight: 600; letter-spacing: .8px; max-width: 150px; color: #b8d9e7; }
+  .summary-val { font-size: 36px; line-height: 1.2; letter-spacing: -1px; white-space: nowrap; }
+  .hours-list { gap: 10px; }
+  .hour-item { min-height: 76px; padding: 16px 58px 16px 16px; background: var(--bg-panel); gap: 12px; border-color: var(--border); }
+  .hour-date { font-size: 15px; }
+  .hour-date small { font-size: 12px; margin-top: 4px; }
+  .hour-val { white-space: nowrap; font-size: 14px; padding: 6px 10px; }
+  .btn-complain { width: 44px; height: 44px; right: 6px; }
+  .sched-grid { grid-template-columns: minmax(0, 1fr); gap: 12px; }
+  .shift-card { padding: 16px; background: var(--bg-panel); }
+  .shift-head { font-size: 15px; align-items: center; gap: 8px; margin-bottom: 14px; }
+  .shift-date { font-size: 12px; }
+  .shift-actions { gap: 8px; }
+  .ca-btn { min-height: 44px; font-size: 13px; border-radius: 10px; }
+  .ca-btn.active { box-shadow: none; color: #fff; }
+  .table-wrap { max-width: 100%; }
+  #reqTable { table-layout: fixed; }
+  #reqTable th, #reqTable td { padding: 14px 10px; font-size: 12px; vertical-align: top; overflow-wrap: anywhere; }
+  #reqTable th:first-child { width: 27%; }
+  #reqTable th:nth-child(2) { width: 28%; }
+  .toast-container { top: calc(12px + env(safe-area-inset-top)); left: 16px; right: 16px; }
+  .toast { border-radius: 14px; font-size: 14px; }
+  .toast span { min-width: 0; overflow-wrap: anywhere; }
+  .modal-overlay { align-items: flex-end; }
+  .modal-box {
+    width: 100%; max-width: 520px; max-height: calc(100dvh - 24px - env(safe-area-inset-top)); overflow-y: auto;
+    border-radius: 26px 26px 0 0; padding: 26px 20px calc(24px + env(safe-area-inset-bottom));
+    border-color: var(--border); box-shadow: 0 -12px 40px rgba(0,0,0,.3);
+  }
+  .modal-box .row-actions > .btn { flex: 1; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: .01ms !important; transition-duration: .01ms !important; }
+}
+
+  </style>
 </head>
 <body>
 
@@ -566,27 +661,49 @@
         return result;
       });
     }
+    var tokenRefreshPending = null;
     function refreshToken() {
+      if (tokenRefreshPending) return tokenRefreshPending;
       if (!state.credentials) return Promise.reject();
-      return makeApiCall('login', state.credentials).then(r => {
+      tokenRefreshPending = makeApiCall('login', state.credentials).then(r => {
         if (!r || !r.ok) throw new Error('Refresh failed');
         state.token = r.token; state.tokenExpiry = new Date().getTime() + 3600000;
         localStorage.setItem('sunday.token', state.token); localStorage.setItem('sunday.tokenExpiry', state.tokenExpiry);
         return r;
-      });
+      }).finally(() => { tokenRefreshPending = null; });
+      return tokenRefreshPending;
     }
     function handleTokenExpired() {
       localStorage.clear(); state.token = null;
       $('#cardApp')?.classList.add('hidden'); $('#mainNav')?.classList.add('hidden'); $('#cardLogin')?.classList.remove('hidden');
       toast('Phiên hết hạn', 'error');
     }
-    function api(path, data) {
+    function apiUncached(path, data) {
       data = data || {};
       if (state.token) data.token = state.token;
       if (!isTokenValid() && state.credentials) {
         return refreshToken().then(() => { data.token = state.token; return makeApiCall(path, data); });
       }
       return makeApiCall(path, data);
+    }
+    // Keep only successful read responses in memory, scoped to the current session.
+    const readCache = new Map(), readPending = new Map();
+    function api(path, data) {
+      const ttl = path === 'hours' ? 15000 : path === 'employees' ? 60000 : 0;
+      if (!ttl) return apiUncached(path, data);
+      const key = JSON.stringify([state.token, path, data || {}]);
+      const cached = readCache.get(key);
+      if (isTokenValid() && cached && cached.expires > Date.now()) return Promise.resolve(cached.value);
+      if (readPending.has(key)) return readPending.get(key);
+      const pending = apiUncached(path, data).then(result => {
+        if (result && (result.ok === true || Array.isArray(result))) {
+          if (readCache.size >= 20) readCache.clear();
+          readCache.set(key, { value: result, expires: Date.now() + ttl });
+        }
+        return result;
+      }).finally(() => readPending.delete(key));
+      readPending.set(key, pending);
+      return pending;
     }
 
     // ===== NAVIGATION =====
