@@ -2,7 +2,7 @@
 <html lang="vi">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <title>Quản Lý Giờ Công SB Biên Hoà</title>
 
   <!-- Icons & Styles -->
@@ -351,6 +351,7 @@
     }
     .modal-overlay.show .modal-box { transform: scale(1); }
   </style>
+  <link rel="stylesheet" href="mobile.css">
 </head>
 <body>
 
@@ -366,7 +367,7 @@
       <div class="title">SUNDAY BASIC</div>
     </div>
     <div class="actions-top">
-      <button id="btnLogout" class="btn-icon ghost" type="button" title="Đăng xuất">
+      <button id="btnLogout" class="btn-icon ghost" type="button" title="Đăng xuất" aria-label="Đăng xuất">
         <i class="fa-solid fa-right-from-bracket"></i>
       </button>
     </div>
@@ -376,6 +377,7 @@
     <!-- LOGIN -->
     <section class="glass ripple-container" id="cardLogin">
       <h1><i class="fas fa-fingerprint"></i> Xác thực</h1>
+      <p class="login-intro">Đăng nhập để quản lý giờ công và lịch làm việc của bạn.</p>
       <div class="grid-2">
         <label class="field">
           <span>Email</span>
@@ -548,7 +550,21 @@
     function makeApiCall(path, data) {
       return fetch(API_URL + '?path=' + encodeURIComponent(path), {
         method: 'POST', headers: { 'Content-Type':'application/json' }, body: JSON.stringify(data)
-      }).then(res => { if (!res.ok) { if (res.status === 401) handleTokenExpired(); throw new Error('HTTP ' + res.status); } return res.json(); });
+      }).then(async res => {
+        var result;
+        try { result = await res.json(); } catch (_) { result = null; }
+        if (res.status === 401 || (result && result.ok === false && /(?:token|phiên).*hết hạn/i.test(result.message || ''))) {
+          handleTokenExpired();
+          throw new Error('Phiên đăng nhập hết hạn. Vui lòng đăng nhập lại.');
+        }
+        if (!res.ok) {
+          throw new Error('API ' + path + ' trả HTTP ' + res.status +
+            (res.status === 404 ? ': máy chủ không tìm thấy tài nguyên được yêu cầu.' : '.') +
+            (result && typeof result.message === 'string' ? ' ' + result.message : ''));
+        }
+        if (result === null) throw new Error('API ' + path + ' trả phản hồi không hợp lệ.');
+        return result;
+      });
     }
     function refreshToken() {
       if (!state.credentials) return Promise.reject();
@@ -568,7 +584,7 @@
       data = data || {};
       if (state.token) data.token = state.token;
       if (!isTokenValid() && state.credentials) {
-        return refreshToken().then(() => { data.token = state.token; return makeApiCall(path, data); }).catch(handleTokenExpired);
+        return refreshToken().then(() => { data.token = state.token; return makeApiCall(path, data); });
       }
       return makeApiCall(path, data);
     }
@@ -629,7 +645,7 @@
     function loadHours() {
       var box = $('#hoursBox'); box.innerHTML = '<div class="skeleton" style="height:50px; margin-bottom:8px;"></div>'; $('#totalHoursMonth').textContent = '...';
       api('hours', {}).then(r => {
-        if (!r.ok) throw new Error(''); var headers = r.header || [], rows = r.row || [];
+        if (!r.ok) throw new Error(r.message || 'Không tải được giờ công.'); var headers = r.header || [], rows = r.row || [];
         var dateRow = Array.isArray(headers[0]) ? headers[0] : headers, dayRow = Array.isArray(headers[1]) ? headers[1] : [];
         var startIndex = 4, html = '', len = Math.min(dateRow.length, rows.length);
         var totalRaw = String(rows[3] || '0'), total = parseFloat(totalRaw.replace(',', '.'));
@@ -644,7 +660,7 @@
         }
         if(!html) html = '<div class="muted" style="text-align:center; padding:20px">Không có dữ liệu</div>';
         box.innerHTML = html;
-      }).catch(() => { box.innerHTML = '<div class="text-err" style="text-align:center">Lỗi tải</div>'; });
+      }).catch(err => { $('#totalHoursMonth').textContent = '—'; box.innerHTML = '<div class="text-err" style="text-align:center">' + escapeHtml(err.message || 'Không tải được giờ công.') + '</div>'; });
     }
     function openComplaintModal(dateToSend, displayText) {
       $('#modalDateDisplay').textContent = displayText;
@@ -663,7 +679,7 @@
     function loadSchedule() {
       var grid = $('#schedGrid'); grid.innerHTML = '<div class="skeleton" style="height:100px"></div>';
       api('scheduleGet', {}).then(r => {
-        if (!r.ok) throw new Error(''); schedMeta = r.meta || { days: [] }; schedState = Array.isArray(r.selected) ? r.selected : [];
+        if (!r.ok) throw new Error(r.message || 'Không tải được lịch làm việc.'); schedMeta = r.meta || { days: [] }; schedState = Array.isArray(r.selected) ? r.selected : [];
         while(schedState.length < schedMeta.days.length * 3) schedState.push(false); grid.innerHTML = '';
         schedMeta.days.forEach((d, i) => {
           var card = document.createElement('div'); card.className = 'shift-card ripple-container';
@@ -672,7 +688,7 @@
         });
         grid.querySelectorAll('.ca-btn').forEach(b => { b.addEventListener('click', function() { var idx = parseInt(this.dataset.idx); schedState[idx] = !schedState[idx]; this.classList.toggle('active'); }); });
         if(r.note) $('#scheduleNote').value = r.note;
-      }).catch(() => grid.innerHTML = '<div class="muted">Lỗi</div>');
+      }).catch(err => grid.innerHTML = '<div class="text-err">' + escapeHtml(err.message || 'Không tải được lịch làm việc.') + '</div>');
     }
     $('#btnSchedSave')?.addEventListener('click', function() { var btn = this; btn.disabled = true; btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>'; api('scheduleSave', { selected: schedState, note: $('#scheduleNote').value }).then(r => { if(!r.ok) throw new Error(''); toast('Đã lưu', 'ok'); }).catch(() => toast('Lỗi', 'error')).finally(() => { btn.disabled = false; btn.innerHTML = '<i class="fa-solid fa-check"></i> Lưu'; }); });
     $('#btnSchedClear')?.addEventListener('click', function() { schedState = schedState.map(() => false); loadSchedule(); });
