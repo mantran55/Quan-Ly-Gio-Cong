@@ -129,6 +129,11 @@
       var issue = $('#issueType').value, date = $('#requestDate').value, content = $('#content').value.trim(), passEmp = $('#passEmployee').value, passShift = $('#passShift').value;
       if (!issue || !date || !content) { toast('Điền đủ thông tin', 'error'); return; }
       if (issue === 'pass ca' && (!passEmp || !passShift)) { toast('Chọn NV và Ca', 'error'); return; }
+      if (issue === 'pass ca') {
+        const shiftLabel = { ca1: 'Ca 1', ca2: 'Ca 2', ca3: 'Ca 3' }[passShift];
+        if (!shiftLabel) { toast('Ca pass không hợp lệ', 'error'); return; }
+        content += '\nPass ca: ' + shiftLabel;
+      }
       var btn = $('#btnSend'); btn.disabled = true; btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>';
       api('submit', { payload: { issueType: issue, requestDate: date, passEmployee: passEmp, passShift: passShift, content: content } }).then(r => { if(!r.ok) throw new Error(r.message); toast('Đã gửi', 'ok'); $('#content').value=''; loadRequestList(); }).catch(e => toast(e.message, 'error')).finally(() => { btn.disabled = false; btn.innerHTML = '<i class="fa-solid fa-paper-plane"></i> Gửi'; });
     });
